@@ -340,70 +340,194 @@ const TAG_ICONS = { nature:"🏔", sea:"🌊", city:"🏙", active:"🏍", relax
 
 
 
-const TOUR_PHOTO_URLS = {
-  1: ["https://images.unsplash.com/photo-FYqiB8ltupo?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-ZBw1Y4yZ-L8?w=800&q=85&auto=format&fit=crop"],
-  2: ["https://images.unsplash.com/photo-Cu3tHIVdhWc?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-FYqiB8ltupo?w=800&q=85&auto=format&fit=crop"],
-  3: ["https://images.unsplash.com/photo-tZ1i5tMLR30?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-Cu3tHIVdhWc?w=800&q=85&auto=format&fit=crop"],
-  4: ["https://images.unsplash.com/photo-ZBw1Y4yZ-L8?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-tZ1i5tMLR30?w=800&q=85&auto=format&fit=crop"],
-  5: ["https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&q=85&auto=format&fit=crop"],
-  6: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-BU6lABNbTpA?w=800&q=85&auto=format&fit=crop"],
-  7: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-TejFa7VW5e4?w=800&q=85&auto=format&fit=crop"],
-  8: ["https://images.unsplash.com/photo-TejFa7VW5e4?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  9: ["https://images.unsplash.com/photo-Ks5mNoKPP_U?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo--sIyT9d8QUo?w=800&q=85&auto=format&fit=crop"],
-  10: ["https://images.unsplash.com/photo--sIyT9d8QUo?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  11: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=85&auto=format&fit=crop"],
-  12: ["https://images.unsplash.com/photo-TejFa7VW5e4?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  13: ["https://images.unsplash.com/photo-CsoQ-jm_0vQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-PknaOrb1lVo?w=800&q=85&auto=format&fit=crop"],
-  14: ["https://images.unsplash.com/photo-S4Mzuhyovks?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-fSukI7dVRlk?w=800&q=85&auto=format&fit=crop"],
-  15: ["https://images.unsplash.com/photo-5I32cE4IQ_M?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-tQLFFbPUO9k?w=800&q=85&auto=format&fit=crop"],
-  16: ["https://images.unsplash.com/photo-tQLFFbPUO9k?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-5I32cE4IQ_M?w=800&q=85&auto=format&fit=crop"],
-  17: ["https://images.unsplash.com/photo-QnoBy2PcRaY?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-MKrqxmFlw4c?w=800&q=85&auto=format&fit=crop"],
-  18: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-TejFa7VW5e4?w=800&q=85&auto=format&fit=crop"],
-  19: ["https://images.unsplash.com/photo-n8E6YZBzcXQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  20: ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=85&auto=format&fit=crop"],
-  21: ["https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85&auto=format&fit=crop"],
-  22: ["https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&q=85&auto=format&fit=crop"],
-  23: ["https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=85&auto=format&fit=crop"],
-  24: ["https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&q=85&auto=format&fit=crop"],
-  25: ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=85&auto=format&fit=crop"],
-  26: ["https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-ZWmyi_lbptQ?w=800&q=85&auto=format&fit=crop"],
-  27: ["https://images.unsplash.com/photo-Cu3tHIVdhWc?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-FYqiB8ltupo?w=800&q=85&auto=format&fit=crop"],
-  28: ["https://images.unsplash.com/photo-n8E6YZBzcXQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-MmIGtwO40kw?w=800&q=85&auto=format&fit=crop"],
-  29: ["https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-n8E6YZBzcXQ?w=800&q=85&auto=format&fit=crop"],
-  30: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop"],
-  31: ["https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  101: ["https://images.unsplash.com/photo-FYqiB8ltupo?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-Cu3tHIVdhWc?w=800&q=85&auto=format&fit=crop"],
-  102: ["https://images.unsplash.com/photo-Cu3tHIVdhWc?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-tZ1i5tMLR30?w=800&q=85&auto=format&fit=crop"],
-  103: ["https://images.unsplash.com/photo-ZBw1Y4yZ-L8?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-FYqiB8ltupo?w=800&q=85&auto=format&fit=crop"],
-  104: ["https://images.unsplash.com/photo-tZ1i5tMLR30?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-ZBw1Y4yZ-L8?w=800&q=85&auto=format&fit=crop"],
-  105: ["https://images.unsplash.com/photo-CsoQ-jm_0vQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-m3E0S4LoIuQ?w=800&q=85&auto=format&fit=crop"],
-  106: ["https://images.unsplash.com/photo-fSukI7dVRlk?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-S4Mzuhyovks?w=800&q=85&auto=format&fit=crop"],
-  107: ["https://images.unsplash.com/photo-6c5_BlNRWDA?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-tQLFFbPUO9k?w=800&q=85&auto=format&fit=crop"],
-  108: ["https://images.unsplash.com/photo-tQLFFbPUO9k?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-6c5_BlNRWDA?w=800&q=85&auto=format&fit=crop"],
-  109: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-TejFa7VW5e4?w=800&q=85&auto=format&fit=crop"],
-  110: ["https://images.unsplash.com/photo-TejFa7VW5e4?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  111: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-BU6lABNbTpA?w=800&q=85&auto=format&fit=crop"],
-  112: ["https://images.unsplash.com/photo-BU6lABNbTpA?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  113: ["https://images.unsplash.com/photo-Ks5mNoKPP_U?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-VDPFEyIrAn0?w=800&q=85&auto=format&fit=crop"],
-  114: ["https://images.unsplash.com/photo-VDPFEyIrAn0?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  115: ["https://images.unsplash.com/photo-n8E6YZBzcXQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop"],
-  116: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-5lmfoP_j-dE?w=800&q=85&auto=format&fit=crop"],
-  117: ["https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=800&q=85&auto=format&fit=crop"],
-  118: ["https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=85&auto=format&fit=crop"],
-  119: ["https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=85&auto=format&fit=crop"],
-  120: ["https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=85&auto=format&fit=crop"],
-  121: ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=85&auto=format&fit=crop"],
-  122: ["https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85&auto=format&fit=crop"],
-  123: ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-VDPFEyIrAn0?w=800&q=85&auto=format&fit=crop"],
-  124: ["https://images.unsplash.com/photo-tQLFFbPUO9k?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-S4Mzuhyovks?w=800&q=85&auto=format&fit=crop"],
-  125: ["https://images.unsplash.com/photo-Cu3tHIVdhWc?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-FYqiB8ltupo?w=800&q=85&auto=format&fit=crop"],
-  126: ["https://images.unsplash.com/photo-ZWmyi_lbptQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop"],
-  127: ["https://images.unsplash.com/photo-9sHHKZBnp4Q?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop"],
-  128: ["https://images.unsplash.com/photo-QnoBy2PcRaY?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-kG7pOXbBfNs?w=800&q=85&auto=format&fit=crop"],
-  129: ["https://images.unsplash.com/photo-MKrqxmFlw4c?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-guGBRvX0vKE?w=800&q=85&auto=format&fit=crop"],
-  130: ["https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-ZWmyi_lbptQ?w=800&q=85&auto=format&fit=crop"],
-  131: ["https://images.unsplash.com/photo-ZWmyi_lbptQ?w=800&q=85&auto=format&fit=crop", "https://images.unsplash.com/photo-hKREK9tFA0M?w=800&q=85&auto=format&fit=crop"],
+// ── ФОТО-ПУЛЫ ──
+// Каждая тема — массив проверенных файлов с Wikimedia Commons.
+// URL-формат через Special:FilePath: Wikimedia сама редиректит на актуальный thumb,
+// не нужно знать MD5-хеш пути и переживать о смене имени.
+function wm(filename, w = 1024) {
+  return "https://commons.wikimedia.org/wiki/Special:FilePath/" +
+         encodeURIComponent(filename) + "?width=" + w;
+}
+
+const PHOTO_POOLS = {
+  // Далат — горный курорт, цветочный парк, озёра
+  dalat: [
+    wm("Da Lat Flower Park - lake.jpg"),
+    wm("Da Lat Flower Park - pavilion.jpg"),
+    wm("Da Lat Flower Park 01.jpg"),
+    wm("Da Lat Flower Park - road.jpg"),
+    wm("Da Lat Flower Park - Snow White 2.jpg"),
+  ],
+  // Фанранг / башни Чам / дюны
+  phanrang: [
+    wm("Po Klong Garai Cham script.jpg"),
+    wm("Bia ký chữ Phạn-Chăm cổ ở PoKlaungGarai.JPG"),
+    wm("AP0015-Sallet Annam, Tourcham, 1930 – Tour cham de Po Klaung Garai – Vue générale (1).jpg"),
+    wm("Poshanu Cham Towers (14611382581).jpg"),
+  ],
+  // Фуйен — базальтовые столбы, побережье. Файлов в свободном доступе мало,
+  // дополняем общими видами вьетнамского побережья.
+  phuyen: [
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
+  ],
+  // Нячанг — бухта, пляж, лодки
+  nhatrang_sea: [
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
+    wm("NhaTrangBay.JPG"),
+    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
+    wm("Boat at Vinpearl Nha Trang (49374305608).jpg"),
+  ],
+  // Нячанг — город, пагоды, Понагар, Будда
+  nhatrang_city: [
+    wm("Po Nagar Nha Trang Vietnam.JPG"),
+    wm("Long Son Buddhist Temple courtyard.jpg"),
+    wm("Foot of White Buddha Statue, Nha Trang.jpg"),
+    wm("Po Nagar, Champa Temple (26246968821).jpg"),
+    wm("Po Nagar, Champa Temple (26286960146).jpg"),
+  ],
+  // Винперл
+  vinpearl: [
+    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
+    wm("Du thuyền Vinpearl Nha Trang (49357907166).jpg"),
+    wm("Boat at Vinpearl Nha Trang (49374305608).jpg"),
+    wm("Boat at Vinpearl Nha Trang (49374177287).jpg"),
+  ],
+  // Янгбей / водопады. Уникальных проверенных нет — берём близкие пейзажи Нячанга.
+  yangbay: [
+    wm("Long Son Buddhist Temple courtyard.jpg"),
+    wm("Foot of White Buddha Statue, Nha Trang.jpg"),
+    wm("Po Nagar, Champa Temple (26246968821).jpg"),
+  ],
+  // Дананг + Золотой мост Ба На Хиллз
+  bana: [
+    wm("Golden Bridge, Ba Na Hills, Vietnam (49057658457).jpg"),
+    wm("Golden Hand Bridge, Ba Na Hills.jpg"),
+  ],
+  // Дананг город — мост Хан, мост Дракона
+  danang: [
+    wm("Da Nang Bridge.JPG"),
+  ],
+  // Хойан — фонарики, древний город
+  hoian: [
+    wm("Hoi An Ancient Town, Quang Nam province, South Central Coast, Vietnam.jpg"),
+    wm("Hoi An at sunrise 1.jpg"),
+    wm("Hoi An city center I.jpg"),
+    wm("Hoi An Ancient Town (92130).jpg"),
+    wm("Hoi An Ancient town (98823).jpg"),
+    wm("2024-12-20 Night in Hoi An.jpg"),
+  ],
+  // Сайгон / Хошимин
+  saigon: [
+    wm("Hoi An Ancient Town, Quang Nam province, South Central Coast, Vietnam.jpg"),
+    wm("Hoi An city center II.jpg"),
+  ],
+  // Халонг
+  halong: [
+    wm("Ha Long Bay - North East Vietnam.JPG"),
+    wm("Halong bay vietnam.JPG"),
+    wm("Ha Long Bay on a sunny day.jpg"),
+    wm("HalongBay.JPG"),
+    wm("Ha Long Bay Sunset, Vietnam.jpg"),
+    wm("Lan Ha Bay.JPG"),
+    wm("Panoramic of Lan Ha Bay.jpg"),
+  ],
+  // Дайвинг / снорклинг — коралловое море
+  diving: [
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
+    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
+  ],
+  // Активный отдых — джунгли, рисовые поля, дороги
+  adventure: [
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Po Nagar, Champa Temple (26246968821).jpg"),
+    wm("Long Son Buddhist Temple courtyard.jpg"),
+  ],
+  // Морские прогулки: яхты, катамараны, закаты
+  yacht: [
+    wm("Ha Long Bay Sunset, Vietnam.jpg"),
+    wm("Boat at Vinpearl Nha Trang (49374177287).jpg"),
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Du thuyền Vinpearl Nha Trang (49357907166).jpg"),
+  ],
+  // Спа / релакс / горячие источники
+  spa: [
+    wm("Da Lat Flower Park - pavilion.jpg"),
+    wm("Da Lat Flower Park - lake.jpg"),
+  ],
+  // Рыбалка
+  fishing: [
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
+    wm("Ha Long Bay Sunset, Vietnam.jpg"),
+  ],
+  // Вечеринки на пляже
+  party: [
+    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
+    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
+    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
+  ],
 };
+
+// Привязка ID тура → массив ключей пулов (фото берутся в указанном порядке)
+const TOUR_THEMES = {
+  // Центр Туризма (1–31)
+  1:  ["dalat"],                 2:  ["dalat"],              3:  ["dalat"],
+  4:  ["dalat"],                 5:  ["phanrang"],           6:  ["phuyen"],
+  7:  ["nhatrang_sea"],          8:  ["nhatrang_sea","diving"],
+  9:  ["yangbay"],               10: ["yangbay","nhatrang_sea"],
+  11: ["nhatrang_sea","party"],  12: ["nhatrang_sea","party"],
+  13: ["bana","danang"],         14: ["hoian","bana"],
+  15: ["saigon"],                16: ["saigon"],
+  17: ["halong"],                18: ["diving"],
+  19: ["nhatrang_city","nhatrang_sea"],
+  20: ["adventure"],             21: ["adventure"],
+  22: ["yacht","nhatrang_sea"],  23: ["yacht"],            24: ["yacht"],
+  25: ["adventure"],             26: ["spa"],
+  27: ["fishing"],               28: ["fishing"],          29: ["fishing"],
+  30: ["vinpearl","nhatrang_sea"], 31: ["vinpearl"],
+  // Эко Вояж (101–131)
+  101: ["dalat"],                102: ["dalat"],            103: ["dalat"],
+  104: ["dalat"],                105: ["bana","danang"],
+  106: ["hoian","bana"],         107: ["saigon"],           108: ["saigon"],
+  109: ["nhatrang_sea"],         110: ["nhatrang_sea"],
+  111: ["nhatrang_sea","diving"],112: ["nhatrang_sea","diving"],
+  113: ["yangbay"],              114: ["yangbay"],
+  115: ["nhatrang_city"],        116: ["phuyen"],
+  117: ["phanrang"],             118: ["phanrang"],
+  119: ["yacht"],                120: ["yacht"],
+  121: ["adventure"],            122: ["adventure"],
+  123: ["adventure","yangbay"],  124: ["hoian"],
+  125: ["dalat"],                126: ["spa"],
+  127: ["spa","yangbay"],        128: ["halong"],
+  129: ["saigon"],               130: ["spa"],              131: ["spa"],
+};
+
+// Возвращает массив URL-ов фото для тура. Берём из тематических пулов.
+// (Поле TOUR_CONTENT[id].photos устарело — там были невалидные ссылки;
+// если в будущем туда положить РЕАЛЬНЫЕ URL — раскомментируй блок ниже.)
+function getTourPhotos(id) {
+  // const c = (typeof TOUR_CONTENT !== "undefined") ? TOUR_CONTENT[id] : null;
+  // if (c && c.photos && c.photos.length) return c.photos.slice();
+  const themes = TOUR_THEMES[id] || ["nhatrang_sea"];
+  const out = [];
+  themes.forEach(key => {
+    const pool = PHOTO_POOLS[key] || [];
+    pool.forEach(u => { if (!out.includes(u)) out.push(u); });
+  });
+  return out.length ? out : PHOTO_POOLS.nhatrang_sea;
+}
+
+// Старое имя для совместимости — Proxy, чтобы TOUR_PHOTO_URLS[id] продолжал работать
+const TOUR_PHOTO_URLS = new Proxy({}, {
+  get(_, prop) {
+    const id = +prop;
+    if (Number.isNaN(id)) return undefined;
+    return getTourPhotos(id);
+  }
+});
 
 const TOUR_CONTENT = {
 1:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Da_Lat_City_Overview.jpg/800px-Da_Lat_City_Overview.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Dalat_Flower_Garden_Vietnam.jpg/800px-Dalat_Flower_Garden_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Xuan_Huong_Lake%2C_Da_Lat.jpg/800px-Xuan_Huong_Lake%2C_Da_Lat.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Da_Lat_market.jpg/800px-Da_Lat_market.jpg"],desc:"Далат — «маленький Париж» Вьетнама на высоте 1500 метров. Здесь вечно прохладно, пахнет кофе и цветами, а улицы напоминают французскую провинцию. Отличный вариант, чтобы сбежать от нячангской жары и почувствовать совершенно другой Вьетнам.",tips:[{icon:"🧥",text:"Возьмите лёгкую куртку — в Далате +18–22°C даже летом, особенно вечером."},{icon:"⏰",text:"Выезд в 6–7 утра, возвращение вечером — полный световой день."},{icon:"📸",text:"Озеро Суан Хыонг в тумане утром — лучший кадр, до прихода туристов."},{icon:"💰",text:"Возьмите наличные донги — на рынке Далата карты не принимают."}],reviews:[{name:"Марина Соколова",city:"Москва",date:"Март 2024",stars:5,text:"Далат — полная противоположность пляжному Нячангу. Прохладный воздух, клубничные фермы, запах кофе — я не ожидала, что так влюблюсь в этот городок. Однозначно рекомендую."},{name:"Алексей Громов",city:"Новосибирск",date:"Февраль 2024",stars:5,text:"Ехали с женой скептически — зачем горы, когда есть море? Но Далат нас покорил. Водопады, туман, уютные кафе с настоящим кофе. Теперь хотим вернуться на 2 дня."},{name:"Наталья Ким",city:"Владивосток",date:"Январь 2024",stars:4,text:"Насыщенная экскурсия, много ходьбы. Нам досталась большая группа — немного толкотни. Но виды потрясающие, не пожалели."}]},
@@ -455,7 +579,7 @@ function renderGrid() {
     const primaryTag = t.tags[0] || "sea";
     const gradBg = TAG_COLORS[primaryTag] || TAG_COLORS.sea;
     const tagIcon = TAG_ICONS[primaryTag] || "🌊";
-    const _tourUrls = TOUR_PHOTO_URLS[t.id] || TOUR_PHOTO_URLS[7] || [];
+    const _tourUrls = getTourPhotos(t.id);
     const thumbUrl = _tourUrls[0] || "";
     const tagHtml = t.tags.slice(0,2).map(tg=>`<span class="tag-pill">${TAG_LABELS[tg]||tg}</span>`).join("");
     const srcHtml = t.src.map(s=>`<span class="src-pip ${s==='eco'?'eco':''}">${s==='ct'?'Центр Т.':'Эко Вояж'}</span>`).join("");
@@ -464,7 +588,7 @@ function renderGrid() {
     <div class="card ${isSel?'selected':''}" data-id="${t.id}">
       <div class="card-thumb" style="background:${gradBg}">
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25">${tagIcon}</div>
-        <img class="card-thumb-img" src="${thumbUrl}" alt="${t.name}" onload="this.style.opacity=1" onerror="this.style.opacity=0.3">
+        <img class="card-thumb-img" src="${thumbUrl}" alt="${t.name}" loading="lazy" onload="this.style.opacity=1" onerror="this.style.display='none'">
         <div class="card-thumb-overlay"></div>
         <div class="card-price-chip">${priceStr} <span style="opacity:.6;font-size:.65rem">/чел</span></div>
         ${t.rec?'<div class="card-rec-badge">⭐ Топ</div>':''}
@@ -566,10 +690,10 @@ function updateDetailBtn() {
 function loadGallery(tour, thumbUrl) {
   const imgs = document.getElementById("galleryImgs");
   imgs.innerHTML = "";
-  const allUrls = TOUR_PHOTO_URLS[tour.id] || TOUR_PHOTO_URLS[7] || [];
-  // Фото 1 = та же что в карточке, Фото 2 = второе тематическое
+  const allUrls = getTourPhotos(tour.id);
+  // Фото 1 = то же что в карточке, Фото 2 = следующее уникальное из пула
   const photo1 = thumbUrl || allUrls[0] || "";
-  const photo2 = allUrls.find(u => u !== photo1) || allUrls[1] || allUrls[0] || "";
+  const photo2 = allUrls.find(u => u !== photo1) || allUrls[1] || allUrls[0] || photo1;
   const urls = [photo1, photo2].filter(Boolean);
 
   let appeared = false;
