@@ -135,7 +135,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--in
 .lightbox { position:fixed; inset:0; background:rgba(8,12,18,.96); z-index:9999; display:none; align-items:center; justify-content:center; cursor:zoom-out; backdrop-filter:blur(8px); }
 .lightbox.is-open { display:flex; animation:lbFadeIn .2s ease-out; }
 @keyframes lbFadeIn { from { opacity:0 } to { opacity:1 } }
-.lightbox-img { max-width:92vw; max-height:88vh; object-fit:contain; box-shadow:0 30px 80px rgba(0,0,0,.6); cursor:default; user-select:none; }
+.lightbox-img { display:block; max-width:92vw; max-height:88vh; object-fit:contain; box-shadow:0 30px 80px rgba(0,0,0,.6); cursor:default; user-select:none; }
 .lightbox-close { position:absolute; top:1.2rem; right:1.4rem; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.08); border:none; color:#fff; font-size:1.4rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
 .lightbox-close:hover { background:rgba(255,255,255,.18); }
 .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,.08); border:none; color:#fff; font-size:1.6rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; user-select:none; }
@@ -870,24 +870,36 @@ function _renderLightbox() {
   const counter = document.getElementById("lbCounter");
   const prevBtn = document.getElementById("lbPrev");
   const nextBtn = document.getElementById("lbNext");
-  // Подгружаем большую версию: преобразуем thumb URL (например /thumb/.../800px-X.jpg)
-  // в оригинал, либо используем thumb если URL не thumb-формата
   const url = _lb.urls[_lb.idx] || "";
-  img.src = _lbBigVersion(url);
+  const bigUrl = _lbBigVersion(url);
+  // Сначала пробуем большую версию, при ошибке — откатываемся к оригинальному thumb
+  img.onerror = () => {
+    if (img.src !== url) {
+      console.warn("[lightbox] big version failed, falling back to thumb:", url);
+      img.onerror = null;
+      img.src = url;
+    }
+  };
+  img.onload = () => { /* успех */ };
+  img.src = bigUrl;
   counter.textContent = (_lb.urls.length > 1) ? `${_lb.idx + 1} / ${_lb.urls.length}` : "";
   const multi = _lb.urls.length > 1;
   prevBtn.style.display = multi ? "" : "none";
   nextBtn.style.display = multi ? "" : "none";
 }
-// Преобразуем 1024px thumb в 1600px версию (или оригинал). Wikimedia thumb URL имеет вид:
+// Преобразуем 1024px thumb в 1600px версию. Wikimedia thumb URL имеет вид:
 // https://upload.wikimedia.org/wikipedia/commons/thumb/X/Y/File.jpg/1024px-File.jpg
-// — заменяем 1024px на 1600px для большего размера, или возвращаем как есть.
+// Заменяем только ПОСЛЕДНЕЕ вхождение /<число>px- (перед именем файла), чтобы не задеть
+// случайные числа в имени самого файла.
 function _lbBigVersion(url) {
   if (!url) return url;
-  return url.replace(/\/(\d+)px-/, (m, w) => {
-    const newW = Math.max(1600, parseInt(w, 10));
-    return "/" + newW + "px-";
-  });
+  // Ищем последнее /<число>px- в URL
+  const m = url.match(/^(.*\/)(\d+)px-([^/]+)$/);
+  if (!m) return url;
+  const currentW = parseInt(m[2], 10);
+  const targetW = Math.max(1600, currentW);
+  if (targetW === currentW) return url;
+  return m[1] + targetW + "px-" + m[3];
 }
 function _lbNext() { _lb.idx = (_lb.idx + 1) % _lb.urls.length; _renderLightbox(); }
 function _lbPrev() { _lb.idx = (_lb.idx - 1 + _lb.urls.length) % _lb.urls.length; _renderLightbox(); }
