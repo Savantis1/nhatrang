@@ -119,8 +119,8 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--in
 .detail-back:hover { background:rgba(255,255,255,.1); }
 
 .detail-gallery { height:55vh; min-height:320px; position:relative; overflow:hidden; background:#0d1a22; }
-.gallery-imgs { display:flex; height:100%; gap:3px; }
-.gimg { flex:1; overflow:hidden; position:relative; }
+.gallery-imgs { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; height:100%; gap:3px; }
+.gimg { overflow:hidden; position:relative; }
 .gimg img { width:100%; height:100%; object-fit:cover; transition:transform .5s; opacity:1; }
 .gimg:hover img { transform:scale(1.04); }
 .gallery-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(18,24,31,.85) 0%,rgba(18,24,31,.1) 40%,transparent 70%); pointer-events:none; }
@@ -173,7 +173,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--in
 .detail-select-btn.is-selected { background:rgba(255,255,255,.08); color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.12); }
 
 .empty { grid-column:1/-1; text-align:center; padding:3rem; color:var(--mist); font-size:.85rem; }
-@media(max-width:520px){ .gallery-imgs .gimg:nth-child(n+3){display:none;} .grid{grid-template-columns:1fr;} }
+@media(max-width:520px){ .gallery-imgs { grid-template-columns:1fr 1fr; grid-template-rows:1fr; } .gallery-imgs .gimg:nth-child(n+3){display:none;} .grid{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -340,192 +340,234 @@ const TAG_ICONS = { nature:"🏔", sea:"🌊", city:"🏙", active:"🏍", relax
 
 
 
-// ── ФОТО-ПУЛЫ ──
-// Каждая тема — массив проверенных файлов с Wikimedia Commons.
-// URL-формат через Special:FilePath: Wikimedia сама редиректит на актуальный thumb,
-// не нужно знать MD5-хеш пути и переживать о смене имени.
-function wm(filename, w = 1024) {
-  return "https://commons.wikimedia.org/wiki/Special:FilePath/" +
-         encodeURIComponent(filename) + "?width=" + w;
+// ── ДИНАМИЧЕСКИЕ ФОТО ИЗ WIKIMEDIA COMMONS ──
+// Каждой экскурсии назначены реальные категории Commons.
+// Фото подгружаются на лету через Commons Action API с кешированием в localStorage.
+
+const TOUR_CATEGORIES = {
+  // ЦЕНТР ТУРИЗМА (1–31)
+  // Далат — несколько разных ярких мест
+  1: ["Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat Flower Park"],
+  2: ["Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat Flower Park", "Da Lat"],
+  3: ["Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat Flower Park", "Da Lat"],
+  4: ["Da Lat", "Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat Flower Park"],
+  // Фанранг — башни Чам, дюны Муйне (Mũi Né не работает в API без диакритик — пишу как раз с ними)
+  5: ["Temple of Po Klong Garai", "Mui Ne", "Beaches of Vietnam"],
+  // Фуйен — Нячанг и общая категория Vietnam scenery
+  6: ["Nha Trang Bay", "Beaches of Vietnam", "Nha Trang"],
+  // Северные острова Нячанга
+  7: ["Nha Trang Bay", "Vinpearl Nha Trang", "Beaches of Vietnam"],
+  // Морское приключение / снорклинг
+  8: ["Nha Trang Bay", "Beaches of Vietnam", "Vinpearl Nha Trang"],
+  // Янгбей — нет специфичной категории; берём пагоды Нячанга и Долину
+  9: ["Long Son Pagoda", "Nha Trang", "Linh Phuoc Pagoda"],
+  // Бахо + Райский пляж
+  10: ["Beaches of Vietnam", "Nha Trang Bay", "Nha Trang"],
+  // Funny Party
+  11: ["Beaches of Vietnam", "Nha Trang Bay", "Vinpearl Nha Trang"],
+  // Райский остров
+  12: ["Vinpearl Nha Trang", "Beaches of Vietnam", "Nha Trang Bay"],
+  // Дананг — Золотой мост
+  13: ["Ba Na Hills", "Dragon Bridge (Danang)", "Da Nang"],
+  // Дананг + Хойан
+  14: ["Hoi An", "Lanterns in Hoi An", "Ba Na Hills"],
+  // Сайгон 1 день
+  15: ["Ho Chi Minh City", "Buildings in Ho Chi Minh City", "Nguyen Hue Boulevard, Ho Chi Minh City"],
+  // Сайгон 2 дня
+  16: ["Ho Chi Minh City", "Buildings in Ho Chi Minh City", "People's Committee Building of Ho Chi Minh City"],
+  // Ханой + Халонг
+  17: ["Ha Long Bay", "Lan Ha Bay", "Hoan Kiem Lake"],
+  // Дайвинг
+  18: ["Nha Trang Bay", "Beaches of Vietnam", "Vinpearl Nha Trang"],
+  // Обзорная по Нячангу
+  19: ["Thap Po Nagar", "Long Son Pagoda", "Nha Trang"],
+  // Квадроциклы / зиплайн в джунглях — берём общую природу + Далат для гор
+  20: ["Da Lat", "Linh Phuoc Pagoda"],
+  21: ["Da Lat", "Linh Phuoc Pagoda"],
+  // Катамаран
+  22: ["Nha Trang Bay", "Beaches of Vietnam"],
+  // Вечерний круиз 4★
+  23: ["Nha Trang Bay", "Vinpearl Nha Trang"],
+  // Вечерний круиз 5★
+  24: ["Vinpearl Nha Trang", "Nha Trang Bay"],
+  // Jeep Safari
+  25: ["Da Lat", "Beaches of Vietnam"],
+  // IRESORT (грязевые ванны)
+  26: ["Nha Trang", "Beaches of Vietnam"],
+  // Рыбалка на озере
+  27: ["Nha Trang", "Beaches of Vietnam"],
+  // Морская рыбалка
+  28: ["Nha Trang Bay", "Beaches of Vietnam"],
+  // Ночная ловля кальмара
+  29: ["Nha Trang Bay", "Beaches of Vietnam"],
+  // Vinpearl 1 день
+  30: ["Vinpearl Nha Trang", "Nha Trang Bay"],
+  // Vinpearl с ночёвкой
+  31: ["Vinpearl Nha Trang", "Beaches of Vietnam"],
+
+  // ЭКО ВОЯЖ (101–131)
+  101: ["Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat Flower Park"],
+  102: ["Da Lat Flower Park", "Hang Nga guesthouse", "Linh Phuoc Pagoda"],
+  103: ["Linh Phuoc Pagoda", "Da Lat Flower Park", "Hang Nga guesthouse"],
+  104: ["Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat", "Da Lat Flower Park"],
+  105: ["Ba Na Hills", "Dragon Bridge (Danang)", "Da Nang"],
+  106: ["Hoi An", "Lanterns in Hoi An", "Ba Na Hills"],
+  107: ["Ho Chi Minh City", "Buildings in Ho Chi Minh City"],
+  108: ["Ho Chi Minh City", "Buildings in Ho Chi Minh City", "Nguyen Hue Boulevard, Ho Chi Minh City"],
+  109: ["Nha Trang Bay", "Vinpearl Nha Trang", "Beaches of Vietnam"],
+  110: ["Nha Trang Bay", "Vinpearl Nha Trang", "Beaches of Vietnam"],
+  111: ["Nha Trang Bay", "Beaches of Vietnam"],
+  112: ["Nha Trang Bay", "Beaches of Vietnam", "Vinpearl Nha Trang"],
+  113: ["Long Son Pagoda", "Nha Trang", "Linh Phuoc Pagoda"],
+  114: ["Long Son Pagoda", "Linh Phuoc Pagoda", "Nha Trang"],
+  115: ["Thap Po Nagar", "Long Son Pagoda", "Nha Trang"],
+  116: ["Nha Trang Bay", "Beaches of Vietnam", "Nha Trang"],
+  117: ["Temple of Po Klong Garai", "Mui Ne", "Beaches of Vietnam"],
+  118: ["Mui Ne", "Temple of Po Klong Garai", "Beaches of Vietnam"],
+  119: ["Nha Trang Bay", "Vinpearl Nha Trang"],
+  120: ["Nha Trang Bay", "Vinpearl Nha Trang"],
+  121: ["Da Lat", "Linh Phuoc Pagoda"],
+  122: ["Da Lat", "Hang Nga guesthouse"],
+  123: ["Da Lat", "Linh Phuoc Pagoda", "Long Son Pagoda"],
+  124: ["Hoi An", "Lanterns in Hoi An"],
+  125: ["Hang Nga guesthouse", "Linh Phuoc Pagoda", "Da Lat Flower Park"],
+  126: ["Nha Trang", "Beaches of Vietnam"],
+  127: ["Long Son Pagoda", "Nha Trang"],
+  128: ["Ha Long Bay", "Lan Ha Bay"],
+  129: ["Ho Chi Minh City", "Buildings in Ho Chi Minh City"],
+  130: ["Nha Trang", "Beaches of Vietnam"],
+  131: ["Nha Trang", "Beaches of Vietnam"],
+};
+
+// Резервный плейсхолдер на случай отказа сети — красивый градиент в стиле сайта
+const FALLBACK_PHOTO = ""; // пусто = градиент с эмодзи останется виден
+
+// ── Кеш ──
+const _photoMemCache = {};   // в памяти на сессию
+function _lsKey(cat) { return "wmcat:" + cat; }
+function _lsGet(cat) {
+  try {
+    const raw = localStorage.getItem(_lsKey(cat));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // протухает за 30 дней
+    if (Date.now() - parsed.t > 30 * 24 * 3600 * 1000) return null;
+    return parsed.urls;
+  } catch (e) { return null; }
+}
+function _lsSet(cat, urls) {
+  try { localStorage.setItem(_lsKey(cat), JSON.stringify({ t: Date.now(), urls })); } catch (e) {}
 }
 
-const PHOTO_POOLS = {
-  // Далат — горный курорт, цветочный парк, озёра
-  dalat: [
-    wm("Da Lat Flower Park - lake.jpg"),
-    wm("Da Lat Flower Park - pavilion.jpg"),
-    wm("Da Lat Flower Park 01.jpg"),
-    wm("Da Lat Flower Park - road.jpg"),
-    wm("Da Lat Flower Park - Snow White 2.jpg"),
-  ],
-  // Фанранг / башни Чам / дюны
-  phanrang: [
-    wm("Po Klong Garai Cham script.jpg"),
-    wm("Bia ký chữ Phạn-Chăm cổ ở PoKlaungGarai.JPG"),
-    wm("AP0015-Sallet Annam, Tourcham, 1930 – Tour cham de Po Klaung Garai – Vue générale (1).jpg"),
-    wm("Poshanu Cham Towers (14611382581).jpg"),
-  ],
-  // Фуйен — базальтовые столбы, побережье. Файлов в свободном доступе мало,
-  // дополняем общими видами вьетнамского побережья.
-  phuyen: [
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
-  ],
-  // Нячанг — бухта, пляж, лодки
-  nhatrang_sea: [
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
-    wm("NhaTrangBay.JPG"),
-    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
-    wm("Boat at Vinpearl Nha Trang (49374305608).jpg"),
-  ],
-  // Нячанг — город, пагоды, Понагар, Будда
-  nhatrang_city: [
-    wm("Po Nagar Nha Trang Vietnam.JPG"),
-    wm("Long Son Buddhist Temple courtyard.jpg"),
-    wm("Foot of White Buddha Statue, Nha Trang.jpg"),
-    wm("Po Nagar, Champa Temple (26246968821).jpg"),
-    wm("Po Nagar, Champa Temple (26286960146).jpg"),
-  ],
-  // Винперл
-  vinpearl: [
-    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
-    wm("Du thuyền Vinpearl Nha Trang (49357907166).jpg"),
-    wm("Boat at Vinpearl Nha Trang (49374305608).jpg"),
-    wm("Boat at Vinpearl Nha Trang (49374177287).jpg"),
-  ],
-  // Янгбей / водопады. Уникальных проверенных нет — берём близкие пейзажи Нячанга.
-  yangbay: [
-    wm("Long Son Buddhist Temple courtyard.jpg"),
-    wm("Foot of White Buddha Statue, Nha Trang.jpg"),
-    wm("Po Nagar, Champa Temple (26246968821).jpg"),
-  ],
-  // Дананг + Золотой мост Ба На Хиллз
-  bana: [
-    wm("Golden Bridge, Ba Na Hills, Vietnam (49057658457).jpg"),
-    wm("Golden Hand Bridge, Ba Na Hills.jpg"),
-  ],
-  // Дананг город — мост Хан, мост Дракона
-  danang: [
-    wm("Da Nang Bridge.JPG"),
-  ],
-  // Хойан — фонарики, древний город
-  hoian: [
-    wm("Hoi An Ancient Town, Quang Nam province, South Central Coast, Vietnam.jpg"),
-    wm("Hoi An at sunrise 1.jpg"),
-    wm("Hoi An city center I.jpg"),
-    wm("Hoi An Ancient Town (92130).jpg"),
-    wm("Hoi An Ancient town (98823).jpg"),
-    wm("2024-12-20 Night in Hoi An.jpg"),
-  ],
-  // Сайгон / Хошимин
-  saigon: [
-    wm("Hoi An Ancient Town, Quang Nam province, South Central Coast, Vietnam.jpg"),
-    wm("Hoi An city center II.jpg"),
-  ],
-  // Халонг
-  halong: [
-    wm("Ha Long Bay - North East Vietnam.JPG"),
-    wm("Halong bay vietnam.JPG"),
-    wm("Ha Long Bay on a sunny day.jpg"),
-    wm("HalongBay.JPG"),
-    wm("Ha Long Bay Sunset, Vietnam.jpg"),
-    wm("Lan Ha Bay.JPG"),
-    wm("Panoramic of Lan Ha Bay.jpg"),
-  ],
-  // Дайвинг / снорклинг — коралловое море
-  diving: [
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
-    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
-  ],
-  // Активный отдых — джунгли, рисовые поля, дороги
-  adventure: [
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Po Nagar, Champa Temple (26246968821).jpg"),
-    wm("Long Son Buddhist Temple courtyard.jpg"),
-  ],
-  // Морские прогулки: яхты, катамараны, закаты
-  yacht: [
-    wm("Ha Long Bay Sunset, Vietnam.jpg"),
-    wm("Boat at Vinpearl Nha Trang (49374177287).jpg"),
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Du thuyền Vinpearl Nha Trang (49357907166).jpg"),
-  ],
-  // Спа / релакс / горячие источники
-  spa: [
-    wm("Da Lat Flower Park - pavilion.jpg"),
-    wm("Da Lat Flower Park - lake.jpg"),
-  ],
-  // Рыбалка
-  fishing: [
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
-    wm("Ha Long Bay Sunset, Vietnam.jpg"),
-  ],
-  // Вечеринки на пляже
-  party: [
-    wm("Beach in Nha Trang, Vietnam - panoramio.jpg"),
-    wm("Hòn Nội, Nha Trang Bay, Vietnam.jpg"),
-    wm("Boat at Vinpearl Nha Trang (49370118718).jpg"),
-  ],
-};
+// Запрос к Commons Action API: список JPG из категории, отсортированный по убыванию размера.
+// Если landscape-фото мало (<3), дополнительно читает 1-2 подкатегории первого уровня.
+async function fetchCommonsCategoryImages(category, max = 30, _depth = 0) {
+  if (_photoMemCache[category]) return _photoMemCache[category];
+  const cached = _lsGet(category);
+  if (cached) { _photoMemCache[category] = cached; return cached; }
 
-// Привязка ID тура → массив ключей пулов (фото берутся в указанном порядке)
-const TOUR_THEMES = {
-  // Центр Туризма (1–31)
-  1:  ["dalat"],                 2:  ["dalat"],              3:  ["dalat"],
-  4:  ["dalat"],                 5:  ["phanrang"],           6:  ["phuyen"],
-  7:  ["nhatrang_sea"],          8:  ["nhatrang_sea","diving"],
-  9:  ["yangbay"],               10: ["yangbay","nhatrang_sea"],
-  11: ["nhatrang_sea","party"],  12: ["nhatrang_sea","party"],
-  13: ["bana","danang"],         14: ["hoian","bana"],
-  15: ["saigon"],                16: ["saigon"],
-  17: ["halong"],                18: ["diving"],
-  19: ["nhatrang_city","nhatrang_sea"],
-  20: ["adventure"],             21: ["adventure"],
-  22: ["yacht","nhatrang_sea"],  23: ["yacht"],            24: ["yacht"],
-  25: ["adventure"],             26: ["spa"],
-  27: ["fishing"],               28: ["fishing"],          29: ["fishing"],
-  30: ["vinpearl","nhatrang_sea"], 31: ["vinpearl"],
-  // Эко Вояж (101–131)
-  101: ["dalat"],                102: ["dalat"],            103: ["dalat"],
-  104: ["dalat"],                105: ["bana","danang"],
-  106: ["hoian","bana"],         107: ["saigon"],           108: ["saigon"],
-  109: ["nhatrang_sea"],         110: ["nhatrang_sea"],
-  111: ["nhatrang_sea","diving"],112: ["nhatrang_sea","diving"],
-  113: ["yangbay"],              114: ["yangbay"],
-  115: ["nhatrang_city"],        116: ["phuyen"],
-  117: ["phanrang"],             118: ["phanrang"],
-  119: ["yacht"],                120: ["yacht"],
-  121: ["adventure"],            122: ["adventure"],
-  123: ["adventure","yangbay"],  124: ["hoian"],
-  125: ["dalat"],                126: ["spa"],
-  127: ["spa","yangbay"],        128: ["halong"],
-  129: ["saigon"],               130: ["spa"],              131: ["spa"],
-};
+  // Запрос к API: получаем И файлы И подкатегории за один раз.
+  // Для этого делаем два отдельных вызова: file и subcat.
+  async function _query(cmtype, lim) {
+    const url = "https://commons.wikimedia.org/w/api.php?" +
+      new URLSearchParams({
+        action: "query",
+        format: "json",
+        origin: "*",
+        generator: "categorymembers",
+        gcmtitle: "Category:" + category,
+        gcmtype: cmtype,
+        gcmlimit: String(lim),
+        prop: "imageinfo",
+        iiprop: "url|size|mime",
+        iiurlwidth: "1024",
+      }).toString();
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }
 
-// Возвращает массив URL-ов фото для тура. Берём из тематических пулов.
-// (Поле TOUR_CONTENT[id].photos устарело — там были невалидные ссылки;
-// если в будущем туда положить РЕАЛЬНЫЕ URL — раскомментируй блок ниже.)
-function getTourPhotos(id) {
-  // const c = (typeof TOUR_CONTENT !== "undefined") ? TOUR_CONTENT[id] : null;
-  // if (c && c.photos && c.photos.length) return c.photos.slice();
-  const themes = TOUR_THEMES[id] || ["nhatrang_sea"];
+  try {
+    const data = await _query("file", max);
+    const pages = (data && data.query && data.query.pages) || {};
+    const photos = [];
+    Object.values(pages).forEach(p => {
+      const ii = p.imageinfo && p.imageinfo[0];
+      if (!ii) return;
+      const mime = ii.mime || "";
+      if (!/jpe?g$/i.test(mime)) return;
+      const w = ii.width || 0, h = ii.height || 0;
+      if (w < 800) return;
+      if (w < h * 0.95) return;  // только горизонтальные
+      const url = ii.thumburl || ii.url;
+      if (url) photos.push({ url, area: w * h });
+    });
+    photos.sort((a, b) => b.area - a.area);
+    let urls = photos.slice(0, 12).map(p => p.url);
+
+    // Если в категории мало подходящих фото — заходим в подкатегории
+    if (urls.length < 3 && _depth < 1) {
+      try {
+        const subData = await _query("subcat", 6);
+        const subPages = (subData && subData.query && subData.query.pages) || {};
+        const subTitles = Object.values(subPages)
+          .map(p => (p.title || "").replace(/^Category:/, ""))
+          .filter(Boolean)
+          .slice(0, 3);  // не более 3 подкатегорий
+        for (const sub of subTitles) {
+          const subUrls = await fetchCommonsCategoryImages(sub, max, _depth + 1);
+          subUrls.forEach(u => { if (!urls.includes(u)) urls.push(u); });
+          if (urls.length >= 8) break;
+        }
+      } catch (e) { /* игнорируем */ }
+    }
+
+    _photoMemCache[category] = urls;
+    _lsSet(category, urls);
+    return urls;
+  } catch (e) {
+    console.warn("Commons fetch failed for", category, e);
+    return [];
+  }
+}
+
+// Возвращает массив URL для тура: тянет из всех его категорий и перемешивает.
+// Берёт по 2-3 URL из каждой категории, чтобы фото были разнообразные.
+async function getTourPhotosAsync(tourId, count = 4) {
+  const cats = TOUR_CATEGORIES[tourId] || [];
+  if (!cats.length) return [];
+  const buckets = await Promise.all(cats.map(c => fetchCommonsCategoryImages(c)));
+  // Перемешиваем по принципу round-robin: 1-е из каждой → 2-е из каждой → ...
   const out = [];
-  themes.forEach(key => {
-    const pool = PHOTO_POOLS[key] || [];
-    pool.forEach(u => { if (!out.includes(u)) out.push(u); });
-  });
-  return out.length ? out : PHOTO_POOLS.nhatrang_sea;
+  let idx = 0;
+  while (out.length < count * 2 && idx < 12) {
+    for (const b of buckets) {
+      if (b[idx] && !out.includes(b[idx])) out.push(b[idx]);
+      if (out.length >= count * 2) break;
+    }
+    idx++;
+  }
+  return out.slice(0, count);
 }
 
-// Старое имя для совместимости — Proxy, чтобы TOUR_PHOTO_URLS[id] продолжал работать
+// Синхронный прокси для совместимости со старым кодом — отдаёт пустой массив,
+// но запускает асинхронную загрузку и обновление картинок через data-атрибут.
+function getTourPhotos(id) {
+  // Возвращает то, что уже в кеше, иначе — пустой массив; реальная подгрузка
+  // делается в renderGrid/loadGallery асинхронно.
+  const cats = TOUR_CATEGORIES[id] || [];
+  const cached = [];
+  cats.forEach(c => {
+    if (_photoMemCache[c]) cached.push(..._photoMemCache[c]);
+    else { const ls = _lsGet(c); if (ls) { _photoMemCache[c] = ls; cached.push(...ls); } }
+  });
+  return cached;
+}
+
 const TOUR_PHOTO_URLS = new Proxy({}, {
   get(_, prop) {
     const id = +prop;
-    if (Number.isNaN(id)) return undefined;
-    return getTourPhotos(id);
+    return Number.isNaN(id) ? undefined : getTourPhotos(id);
   }
 });
 
@@ -579,7 +621,7 @@ function renderGrid() {
     const primaryTag = t.tags[0] || "sea";
     const gradBg = TAG_COLORS[primaryTag] || TAG_COLORS.sea;
     const tagIcon = TAG_ICONS[primaryTag] || "🌊";
-    const _tourUrls = getTourPhotos(t.id);
+    const _tourUrls = getTourPhotos(t.id);  // из кеша, может быть пусто
     const thumbUrl = _tourUrls[0] || "";
     const tagHtml = t.tags.slice(0,2).map(tg=>`<span class="tag-pill">${TAG_LABELS[tg]||tg}</span>`).join("");
     const srcHtml = t.src.map(s=>`<span class="src-pip ${s==='eco'?'eco':''}">${s==='ct'?'Центр Т.':'Эко Вояж'}</span>`).join("");
@@ -588,7 +630,9 @@ function renderGrid() {
     <div class="card ${isSel?'selected':''}" data-id="${t.id}">
       <div class="card-thumb" style="background:${gradBg}">
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25">${tagIcon}</div>
-        <img class="card-thumb-img" src="${thumbUrl}" alt="${t.name}" loading="lazy" onload="this.style.opacity=1" onerror="this.style.display='none'">
+        <img class="card-thumb-img" data-tour-id="${t.id}" src="${thumbUrl}" alt="${t.name}" loading="lazy"
+             onload="this.style.opacity=1"
+             onerror="this.style.display='none'">
         <div class="card-thumb-overlay"></div>
         <div class="card-price-chip">${priceStr} <span style="opacity:.6;font-size:.65rem">/чел</span></div>
         ${t.rec?'<div class="card-rec-badge">⭐ Топ</div>':''}
@@ -603,11 +647,23 @@ function renderGrid() {
         <div class="card-desc">${t.desc}</div>
         <div class="card-footer">
           <div class="src-pips">${srcHtml}</div>
-          <span class="detail-link" data-detail="${t.id}" data-thumb="${thumbUrl}">Подробнее →</span>
+          <span class="detail-link" data-detail="${t.id}">Подробнее →</span>
         </div>
       </div>
     </div>`;
   }).join("");
+
+  // Асинхронно подгружаем фото из Wikimedia Commons и подставляем в карточки
+  tours.forEach(t => {
+    const img = grid.querySelector(`.card-thumb-img[data-tour-id="${t.id}"]`);
+    if (!img || img.src) return;  // если уже стоит из кеша — пропускаем
+    getTourPhotosAsync(t.id, 1).then(urls => {
+      if (urls && urls[0]) {
+        img.style.display = "";
+        img.src = urls[0];
+      }
+    }).catch(() => {});
+  });
 
   grid.querySelectorAll(".card").forEach(card => {
     card.addEventListener("click", e => {
@@ -622,7 +678,7 @@ function renderGrid() {
   grid.querySelectorAll(".detail-link").forEach(link => {
     link.addEventListener("click", e => {
       e.stopPropagation();
-      openDetail(+link.dataset.detail, link.dataset.thumb || "");
+      openDetail(+link.dataset.detail);
     });
   });
 }
@@ -644,7 +700,7 @@ function updateStats() {
 }
 
 // ── DETAIL ──
-function openDetail(id, thumbUrl) {
+function openDetail(id) {
   const tour = TOURS.find(t=>t.id===id);
   if (!tour) return;
   currentTour = tour;
@@ -671,7 +727,7 @@ function openDetail(id, thumbUrl) {
   document.getElementById("galleryLoading").style.display = "flex";
   document.getElementById("galleryImgs").style.display = "none";
 
-  loadGallery(tour, thumbUrl);
+  loadGallery(tour);
   loadAI(tour);
 }
 
@@ -687,50 +743,64 @@ function updateDetailBtn() {
   };
 }
 
-function loadGallery(tour, thumbUrl) {
+async function loadGallery(tour) {
   const imgs = document.getElementById("galleryImgs");
   imgs.innerHTML = "";
-  const allUrls = getTourPhotos(tour.id);
-  // Фото 1 = то же что в карточке, Фото 2 = следующее уникальное из пула
-  const photo1 = thumbUrl || allUrls[0] || "";
-  const photo2 = allUrls.find(u => u !== photo1) || allUrls[1] || allUrls[0] || photo1;
-  const urls = [photo1, photo2].filter(Boolean);
+  const galleryLoading = document.getElementById("galleryLoading");
+
+  // Получаем 4 фото асинхронно
+  let urls = [];
+  try {
+    urls = await getTourPhotosAsync(tour.id, 4);
+  } catch (e) { urls = []; }
+
+  // На случай если getTourPhotosAsync ничего не вернул — оставляем пустой массив,
+  // тогда просто покажем 4 градиентных квадрата.
+  const N = 4;
+  const gradients = [
+    "linear-gradient(160deg,#0d4a63,#1a8fa8)",
+    "linear-gradient(160deg,#1a3a2a,#2a5a4a)",
+    "linear-gradient(160deg,#3a1a4a,#5a2a6a)",
+    "linear-gradient(160deg,#4a3a1a,#7a5a2a)",
+  ];
 
   let appeared = false;
-  urls.forEach((url, i) => {
+  function reveal() {
+    if (appeared) return;
+    appeared = true;
+    galleryLoading.style.display = "none";
+    imgs.style.display = "flex";
+  }
+
+  for (let i = 0; i < N; i++) {
     const div = document.createElement("div");
     div.className = "gimg";
-    div.style.background = i === 0
-      ? "linear-gradient(160deg,#0d4a63,#1a8fa8)"
-      : "linear-gradient(160deg,#1a3a2a,#2a5a4a)";
+    div.style.background = gradients[i % gradients.length];
     div.style.position = "relative";
 
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = "";
-    img.style.cssText = "width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0;";
-    img.onload = () => {
-      img.style.opacity = "1";
-      if (!appeared) {
-        appeared = true;
-        document.getElementById("galleryLoading").style.display = "none";
-        imgs.style.display = "flex";
-      }
-    };
-    img.onerror = () => {
-      if (!appeared) {
-        appeared = true;
-        document.getElementById("galleryLoading").style.display = "none";
-        imgs.style.display = "flex";
-      }
-    };
-    div.appendChild(img);
+    const url = urls[i];
+    if (url) {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "";
+      img.loading = "lazy";
+      img.style.cssText = "width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0;";
+      img.onload  = () => { img.style.opacity = "1"; reveal(); };
+      img.onerror = () => { img.style.display = "none"; reveal(); };
+      div.appendChild(img);
+    } else {
+      // fallback — иконка по основному тегу тура
+      const iconDiv = document.createElement("div");
+      const tagIcon = TAG_ICONS[tour.tags[0]] || "🌊";
+      iconDiv.style.cssText = "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;opacity:.35;";
+      iconDiv.textContent = tagIcon;
+      div.appendChild(iconDiv);
+    }
     imgs.appendChild(div);
-  });
-  setTimeout(() => {
-    document.getElementById("galleryLoading").style.display = "none";
-    imgs.style.display = "flex";
-  }, 5000);
+  }
+  // Гарантированно показываем галерею через 5 сек, даже если ничего не догрузилось
+  setTimeout(reveal, 5000);
+  reveal();
 }
 
 function loadAI(tour) {
