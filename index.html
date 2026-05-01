@@ -497,13 +497,20 @@ async function fetchCommonsCategoryImages(category, max = 30, _depth = 0) {
       const mime = ii.mime || "";
       if (!/jpe?g$/i.test(mime)) return;
       const w = ii.width || 0, h = ii.height || 0;
-      if (w < 800) return;
-      if (w < h * 0.95) return;  // только горизонтальные
+      if (w < 600 && h < 600) return;  // совсем мелкие — мимо
       const url = ii.thumburl || ii.url;
-      if (url) photos.push({ url, area: w * h });
+      if (!url) return;
+      // Landscape получает приоритет, portrait — допустим но в конце
+      const isLandscape = w >= h * 0.95;
+      photos.push({ url, area: w * h, isLandscape });
     });
-    photos.sort((a, b) => b.area - a.area);
+    // Сортируем: сначала landscape по убыванию площади, потом portrait
+    photos.sort((a, b) => {
+      if (a.isLandscape !== b.isLandscape) return a.isLandscape ? -1 : 1;
+      return b.area - a.area;
+    });
     let urls = photos.slice(0, 12).map(p => p.url);
+    console.log("[wm-photos] cat=" + category + " got=" + urls.length + " (of " + Object.keys(pages).length + " files)");
 
     // Если в категории мало подходящих фото — заходим в подкатегории
     if (urls.length < 3 && _depth < 1) {
@@ -526,7 +533,7 @@ async function fetchCommonsCategoryImages(category, max = 30, _depth = 0) {
     _lsSet(category, urls);
     return urls;
   } catch (e) {
-    console.warn("Commons fetch failed for", category, e);
+    console.warn("[wm-photos] FETCH FAILED for", category, e && e.message ? e.message : e);
     return [];
   }
 }
@@ -769,7 +776,7 @@ async function loadGallery(tour) {
     if (appeared) return;
     appeared = true;
     galleryLoading.style.display = "none";
-    imgs.style.display = "flex";
+    imgs.style.display = "grid";
   }
 
   for (let i = 0; i < N; i++) {
@@ -798,9 +805,10 @@ async function loadGallery(tour) {
     }
     imgs.appendChild(div);
   }
-  // Гарантированно показываем галерею через 5 сек, даже если ничего не догрузилось
-  setTimeout(reveal, 5000);
+  // Сразу показываем галерею (с плейсхолдерами/градиентами), даже если фото ещё грузятся
   reveal();
+  // И гарантированно через 5 сек на случай зависания
+  setTimeout(reveal, 5000);
 }
 
 function loadAI(tour) {
