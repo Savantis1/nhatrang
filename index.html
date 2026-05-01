@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нячанг · Экскурсии</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #12181f;
+  --sand: #f4ede2;
+  --cream: #faf7f2;
+  --ocean: #1a6b8a;
+  --ocean2: #0d4a63;
+  --teal: #2ab8c4;
+  --coral: #e05c3a;
+  --gold: #c8962a;
+  --mist: #8fa3ad;
+  --border: rgba(26,107,138,0.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; overflow-x:hidden; }
+
+.page { display:none; min-height:100vh; }
+.page.active { display:block; }
+
+/* ── LIST PAGE ── */
+#listPage { background:var(--cream); }
+
+.hero {
+  position:relative; overflow:hidden;
+  padding:3.5rem 2rem 2.5rem;
+  background:var(--ocean2); color:white;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 120% 80% at 80% -20%, rgba(42,184,196,.25) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at -10% 110%, rgba(200,150,42,.15) 0%, transparent 45%);
+}
+.hero-inner { position:relative; max-width:900px; margin:0 auto; }
+.hero-eyebrow { font-size:.65rem; letter-spacing:.3em; text-transform:uppercase; color:var(--teal); margin-bottom:.8rem; font-weight:500; }
+.hero h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(2.4rem,6vw,4rem); font-weight:600; line-height:1; margin-bottom:.6rem; }
+.hero h1 em { font-style:italic; color:var(--teal); }
+.hero-sub { font-size:.82rem; color:rgba(255,255,255,.55); font-weight:300; margin-bottom:2rem; }
+.hero-stats { display:flex; gap:2rem; flex-wrap:wrap; }
+.hstat { display:flex; flex-direction:column; gap:.2rem; }
+.hstat-val { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:700; color:white; line-height:1; }
+.hstat-val span { color:var(--teal); font-size:1.2rem; }
+.hstat-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.4); font-weight:500; }
+
+.controls-strip {
+  background:white; border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:50; padding:.7rem 1.5rem;
+}
+.controls-inner { max-width:900px; margin:0 auto; display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; }
+.ctrl-label { font-size:.65rem; font-weight:600; text-transform:uppercase; letter-spacing:.15em; color:var(--mist); flex-shrink:0; }
+.chip {
+  border:1.5px solid var(--border); background:transparent; border-radius:100px;
+  padding:.28rem .85rem; font-size:.72rem; font-family:'DM Sans',sans-serif;
+  font-weight:500; color:var(--mist); cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.chip:hover { border-color:var(--ocean); color:var(--ocean); }
+.chip.active { background:var(--ocean); color:white; border-color:var(--ocean); }
+.chip.rec.active { background:var(--coral); border-color:var(--coral); }
+.sep { width:1px; height:18px; background:var(--border); margin:0 .3rem; flex-shrink:0; }
+
+.grid-wrap { max-width:900px; margin:0 auto; padding:1.5rem 1rem 6rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(265px,1fr)); gap:1rem; }
+
+/* Card */
+.card {
+  background:white; border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; cursor:pointer;
+  transition:all .22s cubic-bezier(.34,1.2,.64,1);
+  position:relative; box-shadow:0 1px 6px rgba(0,0,0,.04);
+}
+.card:hover { transform:translateY(-4px); box-shadow:0 10px 30px rgba(26,107,138,.13); border-color:rgba(26,107,138,.3); }
+.card.selected { border-color:var(--ocean); box-shadow:0 0 0 2px rgba(26,107,138,.2),0 6px 20px rgba(26,107,138,.15); }
+
+.card-thumb { height:130px; position:relative; overflow:hidden; background:#c8d8de; }
+.card-thumb-img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s, opacity .5s; opacity:0; }
+.card:hover .card-thumb-img { transform:scale(1.06); }
+.card-thumb-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(13,74,99,.6) 0%,transparent 55%); }
+.card-price-chip { position:absolute; bottom:.7rem; right:.7rem; background:rgba(13,74,99,.85); backdrop-filter:blur(6px); color:white; font-size:.8rem; font-weight:600; padding:.25rem .6rem; border-radius:8px; border:1px solid rgba(255,255,255,.15); }
+.card-rec-badge { position:absolute; top:.7rem; left:.7rem; background:var(--coral); color:white; font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:.2rem .5rem; border-radius:6px; }
+.card-sel-check { position:absolute; top:.7rem; right:.7rem; width:24px; height:24px; background:var(--ocean); border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(.5); transition:all .2s; color:white; font-size:.75rem; font-weight:700; }
+.card.selected .card-sel-check { opacity:1; transform:scale(1); }
+
+.card-body { padding:.9rem 1rem 1rem; }
+.card-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:.35rem; }
+.card-num { font-size:.6rem; font-weight:600; color:var(--mist); letter-spacing:.05em; }
+.card-tags { display:flex; gap:.25rem; }
+.tag-pill { font-size:.58rem; font-weight:500; padding:.12rem .45rem; border-radius:100px; background:var(--sand); color:var(--ocean2); }
+.card-name { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:600; color:var(--ink); line-height:1.25; margin-bottom:.3rem; }
+.card-desc { font-size:.73rem; color:var(--mist); line-height:1.5; font-weight:300; margin-bottom:.7rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.card-footer { display:flex; justify-content:space-between; align-items:center; }
+.src-pips { display:flex; gap:.25rem; }
+.src-pip { font-size:.58rem; font-weight:600; padding:.14rem .4rem; border-radius:4px; background:rgba(26,107,138,.08); color:var(--ocean); }
+.src-pip.eco { background:rgba(42,120,74,.1); color:#2a784a; }
+.detail-link { font-size:.7rem; font-weight:600; color:var(--ocean); display:flex; align-items:center; gap:.3rem; opacity:.7; transition:opacity .15s; }
+.card:hover .detail-link { opacity:1; }
+
+/* Summary bar */
+.summary-bar { position:fixed; bottom:0; left:0; right:0; background:var(--ink); color:white; padding:.8rem 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; z-index:200; transform:translateY(100%); transition:transform .3s cubic-bezier(.34,1.4,.64,1); flex-wrap:wrap; }
+.summary-bar.vis { transform:translateY(0); }
+.sum-left { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+.sum-count { font-size:.82rem; font-weight:600; }
+.sum-names { font-size:.72rem; color:rgba(255,255,255,.5); font-weight:300; max-width:350px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sum-total { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:700; color:var(--teal); white-space:nowrap; }
+.sum-clear { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); color:white; border-radius:8px; padding:.3rem .75rem; font-size:.7rem; font-family:'DM Sans',sans-serif; cursor:pointer; transition:background .15s; }
+.sum-clear:hover { background:rgba(255,255,255,.15); }
+
+/* ── DETAIL PAGE ── */
+#detailPage { background:var(--ink); color:white; }
+
+.detail-back { position:fixed; top:1.2rem; left:1.2rem; z-index:100; background:rgba(18,24,31,.7); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.12); color:white; border-radius:100px; padding:.45rem 1rem; font-size:.75rem; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:.4rem; transition:background .2s; }
+.detail-back:hover { background:rgba(255,255,255,.1); }
+
+.detail-gallery { height:55vh; min-height:320px; position:relative; overflow:hidden; background:#0d1a22; }
+.gallery-imgs { display:flex; height:100%; gap:3px; }
+.gimg { flex:1; overflow:hidden; position:relative; }
+.gimg img { width:100%; height:100%; object-fit:cover; transition:transform .5s; opacity:1; }
+.gimg:hover img { transform:scale(1.04); }
+.gallery-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(18,24,31,.85) 0%,rgba(18,24,31,.1) 40%,transparent 70%); pointer-events:none; }
+.gallery-title { position:absolute; bottom:0; left:0; right:0; padding:1.5rem 2rem; }
+.gallery-title-eyebrow { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--teal); margin-bottom:.4rem; }
+.gallery-title h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(1.8rem,5vw,3rem); font-weight:600; line-height:1.1; }
+.gallery-loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#0d1a22; flex-direction:column; gap:.7rem; }
+.spinner { width:28px; height:28px; border:2px solid rgba(255,255,255,.1); border-top-color:var(--teal); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.detail-content { max-width:800px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+.info-strip { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,.08); }
+.info-block { display:flex; flex-direction:column; gap:.2rem; flex:1; min-width:100px; }
+.info-block-label { font-size:.6rem; text-transform:uppercase; letter-spacing:.15em; color:var(--mist); font-weight:500; }
+.info-block-val { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:white; line-height:1; }
+.info-block-val.price-val { color:var(--teal); }
+
+.ai-section { margin-bottom:2rem; }
+.ai-section-title { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:600; margin-bottom:1rem; display:flex; align-items:center; gap:.6rem; }
+.ai-section-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.08); }
+
+.ai-skeleton { display:flex; flex-direction:column; gap:.5rem; }
+.skel-line { height:12px; border-radius:6px; background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.1) 50%,rgba(255,255,255,.05) 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
+@keyframes shimmer { to { background-position:-200% 0; } }
+
+.ai-text { font-size:.85rem; line-height:1.75; color:rgba(255,255,255,.75); font-weight:300; }
+.ai-text strong { color:white; font-weight:500; }
+
+.reviews-grid { display:flex; flex-direction:column; gap:1rem; }
+.review-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:1.1rem 1.2rem; animation:fadeUp .4s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.review-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.7rem; }
+.review-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--ocean),var(--teal)); display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:700; color:white; flex-shrink:0; }
+.review-meta { flex:1; }
+.review-name { font-size:.82rem; font-weight:600; color:white; }
+.review-date { font-size:.68rem; color:var(--mist); }
+.review-stars { color:var(--gold); font-size:.75rem; letter-spacing:.05em; }
+.review-text { font-size:.8rem; line-height:1.65; color:rgba(255,255,255,.65); font-weight:300; }
+.review-photo { width:100%; height:140px; object-fit:cover; border-radius:8px; margin-top:.8rem; opacity:0; transition:opacity .5s; }
+.review-photo.loaded { opacity:1; }
+
+.tips-list { display:flex; flex-direction:column; gap:.6rem; }
+.tip-item { display:flex; gap:.75rem; align-items:flex-start; font-size:.8rem; color:rgba(255,255,255,.7); line-height:1.5; }
+.tip-icon { font-size:1rem; flex-shrink:0; margin-top:.05rem; }
+
+.detail-select-btn { width:100%; padding:1rem; border-radius:12px; border:none; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:600; cursor:pointer; transition:all .2s; margin-top:1.5rem; letter-spacing:.03em; }
+.detail-select-btn.not-selected { background:var(--ocean); color:white; }
+.detail-select-btn.not-selected:hover { background:var(--ocean2); }
+.detail-select-btn.is-selected { background:rgba(255,255,255,.08); color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.12); }
+
+.empty { grid-column:1/-1; text-align:center; padding:3rem; color:var(--mist); font-size:.85rem; }
+@media(max-width:520px){ .gallery-imgs .gimg:nth-child(n+4){display:none;} .grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- LIST PAGE -->
+<div id="listPage" class="page active">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow">🇻🇳 Вьетнам · Нячанг · 12 дней</div>
+      <h1>Все <em>экскурсии</em></h1>
+      <p class="hero-sub">Нажми на карточку — добавь в список. Нажми «Подробнее» — фото, описание, отзывы.</p>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-val" id="hstatCount">0</div><div class="hstat-label">выбрано</div></div>
+        <div class="hstat"><div class="hstat-val"><span id="hstatPrice">0</span><span style="font-size:1rem">$</span></div><div class="hstat-label">на двоих</div></div>
+        <div class="hstat"><div class="hstat-val">62<span style="font-size:1rem"> тура</span></div><div class="hstat-label">в базе</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-strip">
+    <div class="controls-inner">
+      <span class="ctrl-label">Фильтр</span>
+      <button class="chip active" data-filter="all">Все</button>
+      <button class="chip rec" data-filter="recommended">⭐ Топ</button>
+      <button class="chip" data-filter="nature">🏔 Природа</button>
+      <button class="chip" data-filter="sea">🌊 Море</button>
+      <button class="chip" data-filter="city">🏙 Города</button>
+      <button class="chip" data-filter="active">🏍 Актив</button>
+      <button class="chip" data-filter="relax">🛁 Релакс</button>
+      <div class="sep"></div>
+      <button class="chip active" data-source="all">Оба</button>
+      <button class="chip" data-source="ct">Центр Т.</button>
+      <button class="chip" data-source="eco">Эко Вояж</button>
+    </div>
+  </div>
+
+  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+
+  <div class="summary-bar" id="summaryBar">
+    <div class="sum-left">
+      <span class="sum-count" id="sumCount"></span>
+      <span class="sum-names" id="sumNames"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.7rem">
+      <span class="sum-total" id="sumTotal"></span>
+      <button class="sum-clear" id="clearBtn">Сбросить</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PAGE -->
+<div id="detailPage" class="page">
+  <button class="detail-back" id="backBtn">← Назад</button>
+  <div class="detail-gallery" id="detailGallery">
+    <div class="gallery-loading" id="galleryLoading">
+      <div class="spinner"></div>
+      <span style="font-size:.75rem;color:rgba(255,255,255,.4)">Загружаем фото…</span>
+    </div>
+    <div class="gallery-imgs" id="galleryImgs" style="display:none"></div>
+    <div class="gallery-overlay"></div>
+    <div class="gallery-title">
+      <div class="gallery-title-eyebrow" id="detailEyebrow"></div>
+      <h2 id="detailH2"></h2>
+    </div>
+  </div>
+  <div class="detail-content">
+    <div class="info-strip" id="infoStrip"></div>
+    <div class="ai-section">
+      <div class="ai-section-title">📖 Об экскурсии</div>
+      <div id="descContent"></div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-title">💡 Советы</div>
+      <div id="tipsContent"></div>
+    </div>
+    <div class="ai-section">
+      <div class="ai-section-title">💬 Отзывы туристов</div>
+      <div id="reviewsContent"></div>
+    </div>
+    <button class="detail-select-btn not-selected" id="detailSelectBtn"></button>
+  </div>
+</div>
+
+<script>
+const TAG_LABELS = { nature:"🏔 Природа", sea:"🌊 Море", city:"🏙 Города", active:"🏍 Актив", relax:"🛁 Релакс" };
+
+const TOURS = [
+  {id:1,  num:"ЦТ-1",  src:["ct"],  name:"Далат",                  price:33,  tags:["nature","city"],   rec:false, desc:"Горный курорт — для тех, кто не любит переплачивать. Прохлада, цветы, французская архитектура.", photos:"da lat vietnam mountain city flowers"},
+  {id:2,  num:"ЦТ-2",  src:["ct"],  name:"Супер Далат",             price:40,  tags:["nature","city"],   rec:false, desc:"Расширенная программа — самые красивые места Далата за один насыщенный день.", photos:"da lat vietnam valley waterfall"},
+  {id:3,  num:"ЦТ-3",  src:["ct"],  name:"Далат All in",            price:55,  tags:["nature","city"],   rec:false, desc:"Максимум за один день — все главные достопримечательности горного курорта.", photos:"da lat vietnam highlands landscape"},
+  {id:4,  num:"ЦТ-4",  src:["ct"],  name:"Далат 2 дня",             price:96,  tags:["nature","city"],   rec:false, desc:"Двухдневная программа. Капибары, водопады, рынки и французские виллы.", photos:"da lat vietnam resort hotel mountain", multiday:true},
+  {id:5,  num:"ЦТ-5",  src:["ct"],  name:"Фанранг",                 price:45,  tags:["nature","active"], rec:true,  desc:"Виноградники, капибары, белые дюны — уникальный регион к северу от Нячанга.", photos:"phan rang vietnam sand dunes vineyard capybara"},
+  {id:6,  num:"ЦТ-6",  src:["ct"],  name:"Фуйен",                   price:40,  tags:["nature","sea"],    rec:true,  desc:"«Место, где стоит побывать каждому» — нетуристические пейзажи, скалы, прозрачное море.", photos:"phu yen vietnam rocks sea scenic coast"},
+  {id:7,  num:"ЦТ-7",  src:["ct"],  name:"Северные острова",        price:33,  tags:["sea","nature"],    rec:true,  desc:"Остров орхидей и остров обезьян — классика Нячанга. Экзотика прямо у берега.", photos:"nha trang islands boat sea tropical"},
+  {id:8,  num:"ЦТ-8",  src:["ct"],  name:"Морское приключение",     price:32,  tags:["sea","active"],    rec:false, desc:"Морская экскурсия вокруг островов с возможностью снорклинга и купания.", photos:"nha trang snorkeling sea boat island"},
+  {id:9,  num:"ЦТ-9",  src:["ct"],  name:"Янгбей",                  price:33,  tags:["nature","active"], rec:true,  desc:"Крокодилы, горячие источники, водопады и музыкальное шоу — всё в одном насыщенном дне.", photos:"yang bay waterfall vietnam hot springs nature"},
+  {id:10, num:"ЦТ-10", src:["ct"],  name:"Бахо + Райский пляж",     price:55,  tags:["nature","sea"],    rec:false, desc:"Трёхярусный водопад Бахо среди джунглей и уединённый пляж — природа во всей силе.", photos:"ba ho waterfall jungle vietnam beach"},
+  {id:11, num:"ЦТ-11", src:["ct"],  name:"Funny Party",             price:75,  tags:["sea"],             rec:false, desc:"All inclusive: алкоголь, шведский стол на острове. Пляжная вечеринка.", photos:"nha trang beach party island boat sea", adult:true},
+  {id:12, num:"ЦТ-12", src:["ct"],  name:"Райский остров",          price:145, tags:["sea"],             rec:false, desc:"Алкоголь без ограничений! Вечеринка на острове с пляжем и едой.", photos:"nha trang island beach resort luxury tropical", adult:true},
+  {id:13, num:"ЦТ-13", src:["ct"],  name:"Дананг — Золотой мост",   price:195, tags:["city"],            rec:false, desc:"Культовый мост в Руках Бога на горе Ба На. Один из самых фотографируемых объектов Вьетнама.", photos:"golden bridge ba na hills da nang hands"},
+  {id:14, num:"ЦТ-14", src:["ct"],  name:"Дананг + Хойан 2 дня",   price:145, tags:["city"],            rec:false, desc:"Золотой мост + древний город Хойан — два бесподобных места за два дня.", photos:"hoi an ancient town lanterns vietnam night", multiday:true},
+  {id:15, num:"ЦТ-15", src:["ct"],  name:"Сайгон 1 день",           price:195, tags:["city"],            rec:false, desc:"Хошимин — шумный мегаполис, мотоциклы, уличная еда, военные музеи и колониальная архитектура.", photos:"ho chi minh city vietnam street motorbike"},
+  {id:16, num:"ЦТ-16", src:["ct"],  name:"Сайгон 2 дня",            price:350, tags:["city"],            rec:false, desc:"Два дня в Хошимине: тоннели Ку Чи, рынки, ночная жизнь.", photos:"saigon vietnam market city cu chi", multiday:true},
+  {id:17, num:"ЦТ-17", src:["ct"],  name:"Ханой + Халонг",          price:350, tags:["nature","city"],   rec:false, desc:"На самолёте: Ханой + бухта Халонг — одно из 7 чудес природы. 3 дня, 2 ночи.", photos:"halong bay vietnam karst limestone boat cruise", multiday:true},
+  {id:18, num:"ЦТ-18", src:["ct"],  name:"Дайвинг (2 погружения)",  price:85,  tags:["sea","active"],    rec:false, desc:"Два погружения в коралловых рифах Нячанга.", photos:"scuba diving coral reef vietnam underwater fish"},
+  {id:19, num:"ЦТ-19", src:["ct"],  name:"Обзорная по Нячангу",     price:0,   tags:["city"],            rec:false, desc:"Главные достопримечательности города: башни Чам, Белый Будда, Long Son Pagoda.", photos:"nha trang city pagoda po nagar tower", priceText:"инд."},
+  {id:20, num:"ЦТ-20", src:["ct"],  name:"Квадроциклы в джунглях",  price:50,  tags:["active","nature"], rec:false, desc:"Адреналин среди тропических джунглей на квадроцикле.", photos:"atv quad bike vietnam jungle trail mud", priceText:"50$/75$"},
+  {id:21, num:"ЦТ-21", src:["ct"],  name:"Квадроциклы + зиплайн",   price:75,  tags:["active","nature"], rec:false, desc:"Двойной заряд адреналина: квадроциклы по джунглям и зиплайн над кронами деревьев.", photos:"zipline vietnam jungle adventure canopy"},
+  {id:22, num:"ЦТ-22", src:["ct"],  name:"Катамаран",                price:75,  tags:["sea","relax"],     rec:false, desc:"Морская прогулка на катамаране. Закат, ветер, открытое море.", photos:"catamaran sailing boat sea sunset vietnam"},
+  {id:23, num:"ЦТ-23", src:["ct"],  name:"Вечерний круиз 4★",       price:65,  tags:["sea","relax"],     rec:false, desc:"Романтический вечерний круиз — ужин при свечах, огни города и звёздное небо.", photos:"evening cruise yacht dinner romantic sea night", priceText:"65$/75$"},
+  {id:24, num:"ЦТ-24", src:["ct"],  name:"Вечерний круиз 5★",       price:82,  tags:["sea","relax"],     rec:false, desc:"Премиальный ужин-круиз: лучший сервис, живая музыка, золотой закат.", photos:"luxury yacht cruise sunset dinner seafood"},
+  {id:25, num:"ЦТ-25", src:["ct"],  name:"Jeep Safari",              price:85,  tags:["active","nature"], rec:true,  desc:"На джипах по вьетнамским деревням и джунглям — аутентичная местная жизнь.", photos:"jeep tour vietnam village jungle road adventure"},
+  {id:26, num:"ЦТ-26", src:["ct"],  name:"IRESORT",                  price:35,  tags:["relax"],           rec:false, desc:"Грязевые ванны, термальные бассейны и водные горки в тропическом курорте.", photos:"mud bath vietnam resort thermal pool spa"},
+  {id:27, num:"ЦТ-27", src:["ct"],  name:"Рыбалка на озере",         price:35,  tags:["nature","relax"],  rec:false, desc:"Тихая рыбалка на горном озере среди вьетнамской природы.", photos:"fishing lake vietnam mountain peaceful green"},
+  {id:28, num:"ЦТ-28", src:["ct"],  name:"Морская рыбалка",          price:65,  tags:["sea"],             rec:false, desc:"Рыбалка в открытом море. Ранний выход, свежий морской воздух.", photos:"deep sea fishing boat ocean vietnam morning"},
+  {id:29, num:"ЦТ-29", src:["ct"],  name:"Ночная ловля кальмара",    price:60,  tags:["sea","active"],    rec:false, desc:"Ночной выход в море — ловля кальмаров на яркий свет. Атмосферно и необычно.", photos:"squid fishing night boat vietnam sea lights"},
+  {id:30, num:"ЦТ-30", src:["ct"],  name:"Vinpearl 1 день",          price:0,   tags:["relax","active"],  rec:false, desc:"Знаменитый парк Винперл: аквапарк, аттракционы, океанариум, пляж.", photos:"vinpearl nha trang water park rides pool", priceText:"950 000₫"},
+  {id:31, num:"ЦТ-31", src:["ct"],  name:"Vinpearl с ночёвкой",      price:90,  tags:["relax","active"],  rec:false, desc:"Отель 5★ в Винперле + парк 2 дня. Полное погружение в тропический рай.", photos:"vinpearl resort hotel pool luxury nha trang", multiday:true, priceText:"от 90$"},
+  {id:101,num:"ЭВ-1",  src:["eco"], name:"Далат Эко NEW",            price:55,  tags:["nature","city"],   rec:false, desc:"Новый маршрут по Далату со стеклянным мостом над пропастью.", photos:"da lat glass bridge vietnam new highland"},
+  {id:102,num:"ЭВ-2",  src:["eco"], name:"Далат Эко",                price:49,  tags:["nature","city"],   rec:false, desc:"Классический эко-маршрут по Далату со стеклянным мостом.", photos:"da lat vietnam coffee plantation highland"},
+  {id:103,num:"ЭВ-3",  src:["eco"], name:"Далат Премиум",            price:99,  tags:["nature","city"],   rec:true,  desc:"Глиняная деревня, канатная дорога + обед. Полный день в горном Вьетнаме.", photos:"da lat clay village cable car vietnam"},
+  {id:104,num:"ЭВ-4",  src:["eco"], name:"Далат 2 дня",              price:150, tags:["nature","city"],   rec:false, desc:"Отель 3★, 2 обеда, завтрак. Два дня в горном курорте с полным погружением.", photos:"da lat hotel mountain resort vietnam stay", multiday:true},
+  {id:105,num:"ЭВ-5",  src:["eco"], name:"Дананг — Золотой мост",    price:199, tags:["city"],            rec:false, desc:"Завтрак + обед шведский стол + VIP слипер-бас 2 ряда.", photos:"golden bridge ba na hills giant hands clouds"},
+  {id:106,num:"ЭВ-6",  src:["eco"], name:"Дананг – Хойан 2 дня",    price:150, tags:["city"],            rec:false, desc:"2 завтрака, 2 обеда, отель, VIP автобус. Два красивейших города центрального Вьетнама.", photos:"hoi an lanterns night canal old town vietnam", multiday:true},
+  {id:107,num:"ЭВ-7",  src:["eco"], name:"Сайгон Премиум",           price:200, tags:["city"],            rec:false, desc:"Хошимин: завтрак + обед + VIP слипер-бас. Городская культура и история.", photos:"ho chi minh city skyline vietnam architecture"},
+  {id:108,num:"ЭВ-8",  src:["eco"], name:"Сайгон 2 дня",             price:150, tags:["city"],            rec:false, desc:"Отель 3★, 2 завтрака, 2 обеда + VIP автобус. Погружение в атмосферу Хошимина.", photos:"saigon vietnam street market motorbikes city", multiday:true},
+  {id:109,num:"ЭВ-9",  src:["eco"], name:"Северные острова Эко",     price:47,  tags:["sea","nature"],    rec:true,  desc:"Залив Няфу + обед — острова с кристальной водой к северу от Нячанга.", photos:"nha trang north islands bay clear water boat", priceText:"47$/55$"},
+  {id:110,num:"ЭВ-10", src:["eco"], name:"Хон Там",                  price:38,  tags:["sea","relax"],     rec:false, desc:"Остров Хон Там + обед шведский стол. Белый пляж, пальмы, кокосовые коктейли.", photos:"hon tam island nha trang beach palm white sand"},
+  {id:111,num:"ЭВ-11", src:["eco"], name:"Морская прогулка — юг",   price:65,  tags:["sea","active"],    rec:false, desc:"Снорклинг у о. Хон Там — подводный мир с рыбами и кораллами.", photos:"snorkeling coral reef vietnam tropical fish sea", priceText:"65$/85$"},
+  {id:112,num:"ЭВ-12", src:["eco"], name:"Дайвинг Эко",              price:65,  tags:["sea","active"],    rec:false, desc:"1 или 2 погружения в рифах Нячанга с профессиональными инструкторами.", photos:"scuba diving underwater coral reef nha trang", priceText:"65$/85$"},
+  {id:113,num:"ЭВ-13", src:["eco"], name:"Парк Ян Бай",              price:34,  tags:["nature","active"], rec:true,  desc:"Крокодилы, водопады, горячие источники, музыкальное шоу + обед.", photos:"yang bay park vietnam crocodile waterfall music", priceText:"34$/39$"},
+  {id:114,num:"ЭВ-14", src:["eco"], name:"Водопад Бахо + пляж",     price:45,  tags:["nature","sea"],    rec:false, desc:"VIP/Premium: водопад Бахо в джунглях и уединённый тропический пляж.", photos:"ba ho waterfall three tiers jungle nha trang"},
+  {id:115,num:"ЭВ-15", src:["eco"], name:"Обзорная Нячанг Эко",     price:45,  tags:["city"],            rec:false, desc:"Без магазинов! Башни По Нагар, Белый Будда, Long Son Pagoda. 1–3 чел — 45$, от 4 — 35$.", photos:"nha trang pagoda po nagar tower city buddha", priceText:"35$/45$"},
+  {id:116,num:"ЭВ-16", src:["eco"], name:"Фуйен Эко",               price:40,  tags:["nature","sea"],    rec:true,  desc:"Жемчужина Вьетнама + обед. Скалы, нетронутые пляжи без туристических толп.", photos:"phu yen vietnam rocks coast scenic sea"},
+  {id:117,num:"ЭВ-17", src:["eco"], name:"Фан Ранг Эко",            price:45,  tags:["nature","active"], rec:true,  desc:"Виноградники, капибары, дюны + обед. Мало известный туристам регион.", photos:"phan rang sand dunes white vietnam desert"},
+  {id:118,num:"ЭВ-18", src:["eco"], name:"Муйне на машине",         price:100, tags:["nature","active"], rec:false, desc:"Красные и белые дюны, Fairy Stream, рыбацкий порт — феерические пейзажи.", photos:"mui ne red sand dunes fairy stream vietnam", priceText:"от 100$"},
+  {id:119,num:"ЭВ-19", src:["eco"], name:"Катамаран Эко",           price:75,  tags:["sea","relax"],     rec:false, desc:"Морская прогулка на катамаране с открытой палубой — ветер и синева вокруг.", photos:"catamaran boat sailing sea tropical blue"},
+  {id:120,num:"ЭВ-20", src:["eco"], name:"Круиз на закате",         price:65,  tags:["sea","relax"],     rec:false, desc:"17:00–20:30 — золотой час на воде. Закат в открытом море — идеально для пары.", photos:"sunset cruise boat romantic sea golden hour", priceText:"65$/75$/83$"},
+  {id:121,num:"ЭВ-21", src:["eco"], name:"Квадроциклы Эко",         price:49,  tags:["active","nature"], rec:false, desc:"Квадроциклы по окрестностям Нячанга — грязь, джунгли, скорость.", photos:"atv quad bike mud trail vietnam jungle", priceText:"49$/75$"},
+  {id:122,num:"ЭВ-22", src:["eco"], name:"Мототур",                  price:65,  tags:["active","nature"], rec:false, desc:"Культурные деревни и водопад Хон Ба на мотоциклах — аутентичный Вьетнам.", photos:"motorbike tour vietnam village waterfall mountain", priceText:"65$/75$"},
+  {id:123,num:"ЭВ-23", src:["eco"], name:"Джип-туры",                price:85,  tags:["active","nature"], rec:true,  desc:"Дикий водопад, вьетнамская деревня, пикник в джунглях + обед.", photos:"jeep jungle waterfall picnic vietnam wild adventure"},
+  {id:124,num:"ЭВ-24", src:["eco"], name:"Кулинарный мастер-класс", price:65,  tags:["city","relax"],    rec:false, desc:"Учимся готовить фо, свежие роллы и баньми — секреты вьетнамской кухни.", photos:"vietnamese cooking class food pho spring rolls chef", priceText:"65$/75$"},
+  {id:125,num:"ЭВ-25", src:["eco"], name:"Рыбалка на озере Эко",    price:35,  tags:["nature","relax"],  rec:false, desc:"Тихое горное озеро, рыбацкие снасти, тропические птицы — идеальный отдых.", photos:"fishing mountain lake vietnam calm serene green"},
+  {id:126,num:"ЭВ-26", src:["eco"], name:"IRESORT Эко",             price:35,  tags:["relax"],           rec:false, desc:"Тропический рай: грязевые ванны, термальные бассейны, водные горки.", photos:"mud bath thermal resort pool vietnam tropical spa"},
+  {id:127,num:"ЭВ-27", src:["eco"], name:"Билеты Винперл",          price:38,  tags:["relax","active"],  rec:false, desc:"Вход в Vinpearl Land: аквапарк, аттракционы, сафари-парк и пляж.", photos:"vinpearl land amusement park nha trang rides"},
+  {id:128,num:"ЭВ-28", src:["eco"], name:"Ханой + Халонг 3 дня",   price:350, tags:["city","nature"],   rec:false, desc:"3 дня и 2 ночи: столица Вьетнама + знаменитая бухта Халонг — чудо ЮНЕСКО.", photos:"ha long bay vietnam karst islands cruise mist", multiday:true, priceText:"от 350$"},
+  {id:129,num:"ЭВ-29", src:["eco"], name:"Север Вьетнама 4 дня",   price:590, tags:["city","nature"],   rec:false, desc:"Ханой + Халонг + Нинь Бинь (объекты ЮНЕСКО) — 4 дня, 3 ночи.", photos:"ninh binh vietnam karst rice fields boat scenic", multiday:true, priceText:"от 590$"},
+  {id:130,num:"ЭВ-30.1",src:["eco"],name:"Минеральные ванны",      price:35,  tags:["relax"],           rec:false, desc:"100 яиц в минеральной грязи + обед. Термальное удовольствие для кожи.", photos:"mineral mud bath eggs vietnam thermal spring"},
+  {id:131,num:"ЭВ-30.2",src:["eco"],name:"Ванны с грязью и травами",price:45, tags:["relax"],           rec:false, desc:"Минеральная грязь + травяные ванны: 100 яиц + лёгкий обед.", photos:"herbal mud bath spa vietnam mineral pool relax"},
+];
+
+// Tag → gradient fallback color for cards
+const TAG_COLORS = {
+  nature: "linear-gradient(135deg,#1a4a2e,#2d7a4a)",
+  sea:    "linear-gradient(135deg,#0d3d52,#1a6b8a)",
+  city:   "linear-gradient(135deg,#2d1a3d,#5a3a7a)",
+  active: "linear-gradient(135deg,#4a2d0d,#8a5a1a)",
+  relax:  "linear-gradient(135deg,#1a2d4a,#2a4a6a)",
+};
+
+// Tag → emoji icon for fallback thumb
+const TAG_ICONS = { nature:"🏔", sea:"🌊", city:"🏙", active:"🏍", relax:"🛁" };
+
+
+const TOUR_SCENES = {"1": ["mountain", "mountain", "mountain", "mountain"], "2": ["mountain", "mountain", "mountain", "mountain"], "3": ["mountain", "mountain", "mountain", "mountain"], "4": ["mountain", "mountain", "mountain", "mountain"], "5": ["dunes", "dunes", "dunes", "dunes"], "6": ["sea", "sea", "sea", "sea"], "7": ["sea", "sea", "sea", "sea"], "8": ["sea", "sea", "sea", "sea"], "9": ["waterfall", "waterfall", "jungle", "waterfall"], "10": ["waterfall", "jungle", "sea", "waterfall"], "11": ["sea", "sea", "sea", "sunset"], "12": ["sea", "sea", "sea", "sea"], "13": ["city", "city", "city", "city"], "14": ["city", "city", "city", "city"], "15": ["city", "city", "city", "city"], "16": ["city", "city", "city", "city"], "17": ["halong", "halong", "halong", "halong"], "18": ["sea", "sea", "sea", "sea"], "19": ["city", "sea", "city", "city"], "20": ["jungle", "jungle", "jungle", "jungle"], "21": ["jungle", "jungle", "jungle", "jungle"], "22": ["sunset", "sea", "sunset", "sea"], "23": ["sunset", "sunset", "sea", "sunset"], "24": ["sunset", "sunset", "sunset", "sea"], "25": ["jungle", "jungle", "jungle", "jungle"], "26": ["relax", "relax", "relax", "relax"], "27": ["mountain", "mountain", "mountain", "mountain"], "28": ["sea", "sea", "sea", "sea"], "29": ["sea", "sea", "sea", "sea"], "30": ["sea", "relax", "sea", "relax"], "31": ["relax", "sea", "relax", "sea"], "101": ["mountain", "mountain", "mountain", "mountain"], "102": ["mountain", "mountain", "mountain", "mountain"], "103": ["mountain", "mountain", "mountain", "mountain"], "104": ["mountain", "mountain", "mountain", "mountain"], "105": ["city", "city", "city", "city"], "106": ["city", "city", "city", "city"], "107": ["city", "city", "city", "city"], "108": ["city", "city", "city", "city"], "109": ["sea", "sea", "sea", "sea"], "110": ["sea", "relax", "sea", "sea"], "111": ["sea", "sea", "sea", "sea"], "112": ["sea", "sea", "sea", "sea"], "113": ["waterfall", "waterfall", "jungle", "waterfall"], "114": ["waterfall", "sea", "jungle", "waterfall"], "115": ["city", "sea", "city", "city"], "116": ["sea", "sea", "sea", "sea"], "117": ["dunes", "dunes", "dunes", "dunes"], "118": ["dunes", "dunes", "dunes", "dunes"], "119": ["sunset", "sea", "sunset", "sea"], "120": ["sunset", "sunset", "sunset", "sea"], "121": ["jungle", "jungle", "jungle", "jungle"], "122": ["jungle", "jungle", "jungle", "jungle"], "123": ["jungle", "waterfall", "jungle", "waterfall"], "124": ["city", "city", "city", "relax"], "125": ["mountain", "mountain", "mountain", "mountain"], "126": ["relax", "relax", "relax", "relax"], "127": ["sea", "relax", "sea", "relax"], "128": ["halong", "halong", "halong", "halong"], "129": ["halong", "halong", "city", "halong"], "130": ["relax", "relax", "relax", "relax"], "131": ["relax", "relax", "relax", "relax"]};
+
+const PHOTO_SCENES = {
+  "mountain": ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1490682143684-14369e18dce8?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80&auto=format&fit=crop"],
+  "dunes": ["https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=800&q=80&auto=format&fit=crop"],
+  "sea": ["https://images.unsplash.com/photo-1537956965359-7573183d1f57?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1516815231560-8f41ec531527?w=800&q=80&auto=format&fit=crop"],
+  "halong": ["https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1509023464722-18d996393ca8?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1570366583862-f91883984f5f?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1583417267826-aebc4d1542e1?w=800&q=80&auto=format&fit=crop"],
+  "jungle": ["https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80&auto=format&fit=crop"],
+  "waterfall": ["https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1546587348-d12660c30c50?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=800&q=80&auto=format&fit=crop"],
+  "sunset": ["https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80&auto=format&fit=crop"],
+  "relax": ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1531971589569-0d9370cbe1e5?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80&auto=format&fit=crop"],
+  "city": ["https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1598639899-5e3bfcb9e1a3?w=800&q=80&auto=format&fit=crop", "https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80&auto=format&fit=crop"],
+};
+
+const TOUR_CONTENT = {
+1:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Da_Lat_City_Overview.jpg/800px-Da_Lat_City_Overview.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Dalat_Flower_Garden_Vietnam.jpg/800px-Dalat_Flower_Garden_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Xuan_Huong_Lake%2C_Da_Lat.jpg/800px-Xuan_Huong_Lake%2C_Da_Lat.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Da_Lat_market.jpg/800px-Da_Lat_market.jpg"],desc:"Далат — «маленький Париж» Вьетнама на высоте 1500 метров. Здесь вечно прохладно, пахнет кофе и цветами, а улицы напоминают французскую провинцию. Отличный вариант, чтобы сбежать от нячангской жары и почувствовать совершенно другой Вьетнам.",tips:[{icon:"🧥",text:"Возьмите лёгкую куртку — в Далате +18–22°C даже летом, особенно вечером."},{icon:"⏰",text:"Выезд в 6–7 утра, возвращение вечером — полный световой день."},{icon:"📸",text:"Озеро Суан Хыонг в тумане утром — лучший кадр, до прихода туристов."},{icon:"💰",text:"Возьмите наличные донги — на рынке Далата карты не принимают."}],reviews:[{name:"Марина Соколова",city:"Москва",date:"Март 2024",stars:5,text:"Далат — полная противоположность пляжному Нячангу. Прохладный воздух, клубничные фермы, запах кофе — я не ожидала, что так влюблюсь в этот городок. Однозначно рекомендую."},{name:"Алексей Громов",city:"Новосибирск",date:"Февраль 2024",stars:5,text:"Ехали с женой скептически — зачем горы, когда есть море? Но Далат нас покорил. Водопады, туман, уютные кафе с настоящим кофе. Теперь хотим вернуться на 2 дня."},{name:"Наталья Ким",city:"Владивосток",date:"Январь 2024",stars:4,text:"Насыщенная экскурсия, много ходьбы. Нам досталась большая группа — немного толкотни. Но виды потрясающие, не пожалели."}]},
+2:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Da_Lat_City_Overview.jpg/800px-Da_Lat_City_Overview.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Xuan_Huong_Lake%2C_Da_Lat.jpg/800px-Xuan_Huong_Lake%2C_Da_Lat.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Dalat_Flower_Garden_Vietnam.jpg/800px-Dalat_Flower_Garden_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Da_Lat_market.jpg/800px-Da_Lat_market.jpg"],desc:"Расширенная программа по Далату — все самые красивые уголки горного курорта за один насыщенный день. Больше остановок, больше водопадов и смотровых площадок по сравнению с базовым туром.",tips:[{icon:"🧥",text:"Куртка обязательна — горный воздух прохладнее нячангского на 10–15 градусов."},{icon:"⏰",text:"Ранний выезд в 6:00. Полный день на ногах — удобная обувь критична."},{icon:"📸",text:"Долина Любви и сад цветов — главные фото-локации. Приходите пораньше."},{icon:"💰",text:"Клубника, авокадо-смузи, местный кофе — пробуйте всё на рынке Далата."}],reviews:[{name:"Татьяна Борисова",city:"Самара",date:"Апрель 2024",stars:5,text:"Супер Далат — это действительно супер. Успели увидеть всё: водопады, озеро в тумане, цветочный парк. Гид отличный — с историями и шутками, не скучно."},{name:"Вячеслав Орлов",city:"Тюмень",date:"Март 2024",stars:5,text:"Если хотите Далат без спешки — берите этот тур. Насыщенно, но не галопом. Горный воздух после нячангской жары — как глоток воды в жару."},{name:"Людмила Пименова",city:"Воронеж",date:"Февраль 2024",stars:4,text:"Отличная экскурсия. Много ходьбы — лучше в спортивной обуви. Далат очень зелёный и уютный, совсем не похожий на стандартный Вьетнам."}]},
+3:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Da_Lat_City_Overview.jpg/800px-Da_Lat_City_Overview.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Xuan_Huong_Lake%2C_Da_Lat.jpg/800px-Xuan_Huong_Lake%2C_Da_Lat.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Dalat_Flower_Garden_Vietnam.jpg/800px-Dalat_Flower_Garden_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Da_Lat_market.jpg/800px-Da_Lat_market.jpg"],desc:"All in Далат — максимальная программа за один день. Все главные точки горного курорта: водопады, Долина Любви, сад цветов, Безумный дом, рынок. Насыщенно до отказа — для тех, кто не привык терять время.",tips:[{icon:"🧥",text:"Куртка и удобная обувь — обязательно. Много ходьбы по горным тропинкам."},{icon:"⏰",text:"Ранний выезд — весь день на маршруте. Берите перекус в дорогу."},{icon:"📸",text:"Безумный дом Хыонг — самое фотогеничное здание Вьетнама. Не пропустите."},{icon:"💰",text:"Бюджет на еду и сувениры — рынок Далата очень доступный."}],reviews:[{name:"Максим Козырев",city:"Омск",date:"Апрель 2024",stars:5,text:"All in — это честно: реально всё включено. Безумный дом — самое странное и красивое здание, что я видел. Водопады мощные. Устали, но довольны."},{name:"Светлана Грибова",city:"Томск",date:"Март 2024",stars:5,text:"Хотела увидеть всё и сразу — этот тур именно для таких. Ни минуты простоя, масса впечатлений. Далат — мой любимый город Вьетнама теперь."},{name:"Евгений Ларин",city:"Иркутск",date:"Февраль 2024",stars:4,text:"Очень насыщенно, немного устаёшь к концу дня. Но зато действительно видишь всё главное. Безумный дом и цветочный парк — топ."}]},
+5:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Ninh_Thuan_sand_dune.jpg/800px-Ninh_Thuan_sand_dune.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Po_Klong_Garai_towers%2C_Ninh_Thuan.jpg/800px-Po_Klong_Garai_towers%2C_Ninh_Thuan.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Mui_Ne_sand_dunes.jpg/800px-Mui_Ne_sand_dunes.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Capybara_on_grass.jpg/800px-Capybara_on_grass.jpg"],desc:"Фанранг — один из самых засушливых и нетуристических уголков Вьетнама. Белые дюны, виноградники прямо у дороги, тысячелетние башни Чам и капибары — огромные добродушные зверушки, с которыми можно фотографироваться. Место, которое вас удивит.",tips:[{icon:"🌡",text:"Фанранг — самый жаркий регион Вьетнама. Лёгкая светлая одежда, головной убор обязательны."},{icon:"⏰",text:"На дюнах лучше быть рано утром — пока песок не раскалился и свет идеален для фото."},{icon:"📸",text:"Фото с капибарами — животные спокойные и совсем не боятся людей."},{icon:"💰",text:"Виноград местный невероятно вкусный и дешёвый — купите прямо у фермеров."}],reviews:[{name:"Дмитрий Волков",city:"Екатеринбург",date:"Апрель 2024",stars:5,text:"Капибары — это что-то! Огромные, флегматичные и совершенно не боятся людей. Дети были в восторге. Дюны — ощущение Сахары, но рядом море и виноградники."},{name:"Светлана Орлова",city:"Томск",date:"Март 2024",stars:5,text:"Самая неожиданная экскурсия. Фанранг совсем не похож на типичный Вьетнам — сухо, горячо, пейзажи как в кино. Башни Чам поразили своей древностью."},{name:"Игорь Петров",city:"Самара",date:"Январь 2024",stars:4,text:"Насыщенный день, немного устали от дороги. Но капибары и виноградники того стоят. Взяли килограмм местного винограда за копейки — объедение."}]},
+6:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Ganh_Da_Dia_Phu_Yen.jpg/800px-Ganh_Da_Dia_Phu_Yen.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Phu_Yen_Vietnam_coast.jpg/800px-Phu_Yen_Vietnam_coast.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Bai_Mon_Cape%2C_Phu_Yen.jpg/800px-Bai_Mon_Cape%2C_Phu_Yen.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Mui_Dien_lighthouse_Phu_Yen.jpg/800px-Mui_Dien_lighthouse_Phu_Yen.jpg"],desc:"Фуйен — провинция к северу от Нячанга, почти не тронутая туризмом. Гань Да Дия — базальтовые шестиугольные столбы у самого моря, похожие на соты. Самый восточный маяк Вьетнама, бухты с бирюзовой водой — всё в одном дне.",tips:[{icon:"🌊",text:"Скалы Гань Да Дия впечатляют во время волнения — брызги и прибой создают эффект."},{icon:"⏰",text:"Выезжают рано — дорога 2,5 часа. Не опаздывайте на сбор группы."},{icon:"📸",text:"Снимайте скалы с нижней точки — виден весь масштаб колонн и горизонт."},{icon:"💰",text:"Обед часто включён. Возьмите воду в дорогу — точек купить мало."}],reviews:[{name:"Анна Белова",city:"Санкт-Петербург",date:"Апрель 2024",stars:5,text:"Гань Да Дия — фантастическое место. Базальтовые столбы правильной формы у моря — как будто великаны выложили плитку. Людей почти нет, ощущение первооткрывателя."},{name:"Сергей Зайцев",city:"Нижний Новгород",date:"Февраль 2024",stars:5,text:"Фуйен совсем не раскручен — и это его главный плюс. Пейзажи дикие, необработанные. Маяк на мысу с видом на два моря сразу — незабываемо."},{name:"Ольга Иванова",city:"Казань",date:"Март 2024",stars:4,text:"Долго ехать, но стоит. Дорога красивая — вдоль берега. Скалы поражают правильностью форм. Хотелось бы побольше времени у воды."}]},
+7:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Nha_Trang_Bay_from_above.jpg/800px-Nha_Trang_Bay_from_above.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Hon_Mun_Island_Nha_Trang.jpg/800px-Hon_Mun_Island_Nha_Trang.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Nha_Trang_beach.jpg/800px-Nha_Trang_beach.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Nha_Trang_islands_aerial.jpg/800px-Nha_Trang_islands_aerial.jpg"],desc:"Архипелаг у Нячанга — острова с белым песком, орхидеями в диком виде и обезьянами, которые не боятся туристов. Самый популярный однодневный маршрут: море, острова, снорклинг — всё в шаговой доступности от города.",tips:[{icon:"☀️",text:"Берите солнцезащитный крем SPF 50+ — на воде в Вьетнаме обгораешь быстро и незаметно."},{icon:"⏰",text:"Отправление от причала обычно в 8:00. Лучший вид — с верхней палубы лодки."},{icon:"📸",text:"С обезьянами — фото делайте быстро и держите сумки закрытыми, они воришки."},{icon:"💰",text:"Снорклинг-маски лучше взять свои — прокатные бывают неудобные."}],reviews:[{name:"Татьяна Новикова",city:"Хабаровск",date:"Май 2024",stars:5,text:"Обезьяны — звёзды тура! Они буквально залезают на плечи, воруют очки. Орхидеи в диком виде — потрясающе. Море кристальное, снорклинг отличный."},{name:"Вадим Краснов",city:"Красноярск",date:"Март 2024",stars:5,text:"Классическая экскурсия для первого раза в Нячанге. Острова красивые, вода тёплая и прозрачная. Рыб видели прямо у берега без маски."},{name:"Юлия Семёнова",city:"Ростов-на-Дону",date:"Апрель 2024",stars:4,text:"Нам немного не повезло с погодой — слегка штормило. Но острова всё равно красивые. На острове обезьян толпа туристов. В целом — хорошая экскурсия."}]},
+9:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Yang_Bay_Waterfall_Khanh_Hoa.jpg/800px-Yang_Bay_Waterfall_Khanh_Hoa.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hot_spring_Vietnam.jpg/800px-Hot_spring_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Khanh_Hoa_jungle_waterfall.jpg/800px-Khanh_Hoa_jungle_waterfall.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Crocodile_Vietnam_farm.jpg/800px-Crocodile_Vietnam_farm.jpg"],desc:"Янгбей — природный парк в горах Кхань Хоа. За один день: три водопада, крокодилья ферма, горячие источники и национальное шоу народа Ча Ру. Один из самых насыщенных и популярных туров Нячанга.",tips:[{icon:"👟",text:"Закрытая обувь на нескользкой подошве — тропы к водопадам бывают мокрые."},{icon:"⏰",text:"Горячие источники лучше принимать в начале дня — меньше очередей."},{icon:"📸",text:"Лучший кадр у нижнего водопада в брызгах воды. Упакуйте телефон в пакет."},{icon:"💰",text:"Купальник для горячих источников возьмите с собой — прокат выходит дороже."}],reviews:[{name:"Михаил Леонов",city:"Омск",date:"Апрель 2024",stars:5,text:"Три водопада за день — мощно. Горячие источники после прогулки по джунглям — как бальзам. Крокодилы огромные — смотреть лучше из-за ограждения."},{name:"Алёна Чернова",city:"Иркутск",date:"Февраль 2024",stars:5,text:"Лучшая экскурсия за всю поездку! Водопад мощный, мы вымокли до нитки — и это было восхитительно. Шоу народа Ча Ру — с живой музыкой и танцами."},{name:"Роман Фёдоров",city:"Тюмень",date:"Март 2024",stars:4,text:"Отличная насыщенная программа. В горячих источниках в выходные бывает многолюдно. Советую ехать в будни."}]},
+13:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Golden_Bridge_Ba_Na_Hills.jpg/800px-Golden_Bridge_Ba_Na_Hills.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Ba_Na_Hills_cable_car.jpg/800px-Ba_Na_Hills_cable_car.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Da_Nang_Han_River_bridge.jpg/800px-Da_Nang_Han_River_bridge.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Ba_Na_Hills_French_village.jpg/800px-Ba_Na_Hills_French_village.jpg"],desc:"Золотой мост на горе Ба На — одна из самых узнаваемых фотографий Юго-Восточной Азии: 150-метровый пешеходный мост, который держат две гигантские каменные руки. Канатная дорога, французский замок в облаках, альпийский парк аттракционов.",tips:[{icon:"🌂",text:"На горе Ба На туман бывает даже в ясный день — возьмите ветровку."},{icon:"⏰",text:"Приезжайте к открытию — мост фотографируют без очереди только первые час-два."},{icon:"📸",text:"Лучший кадр на мосту — с торца, так видны обе руки и весь мост в перспективе."},{icon:"💰",text:"Еда на горе дорогая — возьмите перекус из города."}],reviews:[{name:"Кирилл Андреев",city:"Воронеж",date:"Апрель 2024",stars:5,text:"Мост Руки Бога — фантастическое место. Стоишь, а внизу облака и зелёные горы. Ощущение полёта. Самый яркий кадр всей поездки."},{name:"Виктория Смирнова",city:"Пермь",date:"Март 2024",stars:5,text:"Ба На Хиллс поразил масштабом. Французский замок в облаках, парк аттракционов, цветочные сады — целый день в другом мире."},{name:"Артём Козлов",city:"Липецк",date:"Январь 2024",stars:4,text:"Место впечатляет, но туристов очень много. На мосту приходится ждать удачного момента для фото. Приезжайте пораньше."}]},
+17:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Halong_Bay_Vietnam.jpg/800px-Halong_Bay_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Ha_Long_Bay_karst.jpg/800px-Ha_Long_Bay_karst.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Halong_Bay_sunset.jpg/800px-Halong_Bay_sunset.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Hanoi_Hoan_Kiem_Lake.jpg/800px-Hanoi_Hoan_Kiem_Lake.jpg"],desc:"Бухта Халонг — 1600 островов из известняка, поднимающихся прямо из воды, как декорации к фильму о другой планете. Объект ЮНЕСКО. Круиз на деревянной джонке между скалами в тумане — одно из самых красивых переживаний во Вьетнаме.",tips:[{icon:"🌧",text:"Апрель–июнь — сезон туманов в Халонге. Туман делает пейзажи мистическими."},{icon:"⏰",text:"Перелёт Нячанг–Ханой час. Лучшие виды на бухту — с носа лодки на рассвете."},{icon:"📸",text:"Рассвет в Халонге с верхней палубы — розовые скалы в тумане не забудете."},{icon:"💊",text:"Морская болезнь — реальный риск. Если укачивает, возьмите таблетки заранее."}],reviews:[{name:"Людмила Громова",city:"Москва",date:"Март 2024",stars:5,text:"Халонг нельзя описать словами. Плывёшь между известняковыми скалами и кажется, что попал на другую планету. Рассвет на лодке — самое красивое утро в жизни."},{name:"Николай Попов",city:"Санкт-Петербург",date:"Февраль 2024",stars:5,text:"Три дня пролетели как один. Ханой интересен — старый квартал, уличная еда. А Халонг — главное чудо Вьетнама. Стоит своих денег абсолютно."},{name:"Елена Сорокина",city:"Екатеринбург",date:"Апрель 2024",stars:4,text:"Потрясающее место. Немного укачало на обратном пути. Каяки по гротам — отдельное приключение внутри приключения. Обязательно берите."}]},
+25:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Jeep_tour_Vietnam_village.jpg/800px-Jeep_tour_Vietnam_village.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Vietnamese_countryside_rice_fields.jpg/800px-Vietnamese_countryside_rice_fields.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Vietnam_jungle_road.jpg/800px-Vietnam_jungle_road.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Khanh_Hoa_countryside.jpg/800px-Khanh_Hoa_countryside.jpg"],desc:"На американских военных джипах — через рисовые поля, деревни, где время остановилось, и джунгли, куда обычные туристы не добираются. Встреча с рыбаками, рисовые террасы, горные тропы — Вьетнам без фасада, настоящий и живой.",tips:[{icon:"👕",text:"Одевайтесь в то, что не жалко испачкать — пыльные дороги оставляют следы."},{icon:"⏰",text:"Самый насыщенный тур — готовьтесь к полному дню с ранним выездом."},{icon:"📸",text:"Дети в деревнях охотно фотографируются — подарите им что-нибудь простое."},{icon:"💰",text:"Небольшой запас донгов для местных рынков — свежие фрукты продают дёшево."}],reviews:[{name:"Павел Яковлев",city:"Новосибирск",date:"Апрель 2024",stars:5,text:"Лучший день в Нячанге без сомнений. Объездили рыбацкие деревни, которых нет в путеводителях. Местные угощали фруктами. Джипы — отдельное удовольствие."},{name:"Инна Морозова",city:"Томск",date:"Февраль 2024",stars:5,text:"Вот это и есть настоящий Вьетнам — рыбаки, буйволы на полях и дети, бегущие за джипом. Незабываемые эмоции и потрясающие фото."},{name:"Степан Козырев",city:"Барнаул",date:"Март 2024",stars:4,text:"Отличное приключение. В открытом джипе жарко — берите кепку. Но впечатления с лихвой перекрывают любой дискомфорт."}]},
+103:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Da_Lat_City_Overview.jpg/800px-Da_Lat_City_Overview.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Da_Lat_cable_car.jpg/800px-Da_Lat_cable_car.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Xuan_Huong_Lake%2C_Da_Lat.jpg/800px-Xuan_Huong_Lake%2C_Da_Lat.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Dalat_Flower_Garden_Vietnam.jpg/800px-Dalat_Flower_Garden_Vietnam.jpg"],desc:"Премиум-версия Далата: глиняная деревня с гончарными мастер-классами, канатная дорога над туманными горами и все главные достопримечательности + полноценный обед с видом на горы. Для тех, кто хочет Далат неторопливо и с комфортом.",tips:[{icon:"🎨",text:"В глиняной деревне можно слепить фигурку на память — это интереснее, чем кажется."},{icon:"⏰",text:"Канатная дорога работает с 7:30. В пиковые часы бывают очереди — приезжайте к открытию."},{icon:"📸",text:"Сад цветов — идеальный фон для портретов. Лучший свет утром до 10:00."},{icon:"💰",text:"Обед включён. На рынке попробуйте авокадо-смузи — это местная специализация."}],reviews:[{name:"Галина Фролова",city:"Краснодар",date:"Апрель 2024",stars:5,text:"Далат Премиум — это уровень выше. Глиняная деревня оказалась неожиданно захватывающей. Канатная дорога над облаками — фантастика."},{name:"Евгений Крылов",city:"Казань",date:"Март 2024",stars:5,text:"Взяли вместо обычного Далата и не пожалели. Обед с видом на горы, гончарный мастер-класс. Отличный вариант для тех, кто не любит суету."},{name:"Ксения Богданова",city:"Уфа",date:"Февраль 2024",stars:4,text:"Хороший тур. Хотелось чуть больше свободного времени в городе. Но канатная дорога и глиняная деревня определённо стоят доплаты."}]},
+109:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Nha_Trang_Bay_from_above.jpg/800px-Nha_Trang_Bay_from_above.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Hon_Mun_Island_Nha_Trang.jpg/800px-Hon_Mun_Island_Nha_Trang.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Nha_Trang_beach.jpg/800px-Nha_Trang_beach.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Nha_Trang_islands_aerial.jpg/800px-Nha_Trang_islands_aerial.jpg"],desc:"Северные острова Нячанга — менее туристические, чем южные. Залив Няфу с кристально чистой водой, коралловые рифы в хорошем состоянии и обед со свежей рыбой прямо на воде. Тихий маршрут для тех, кто хочет море без толпы.",tips:[{icon:"🤿",text:"Маску и трубку возьмите с собой — коралловые рифы здесь лучше, чем у южных островов."},{icon:"⏰",text:"Выход в 8:00. Ветер на северных островах сильнее — море может быть живее."},{icon:"📸",text:"Снимайте с лодки — вид на острова и бухту сверху получается потрясающим."},{icon:"🍽",text:"Обед включён — местные морепродукты на борту, свежайшие."}],reviews:[{name:"Ирина Власова",city:"Тула",date:"Март 2024",stars:5,text:"Северные острова — правильный выбор! Народу меньше, вода прозрачная до дна, рыбки яркие. Обед прямо на палубе с видом на острова — романтично."},{name:"Константин Лебедев",city:"Саратов",date:"Апрель 2024",stars:5,text:"Взяли вместо стандартного по совету гида — не пожалели. Залив Няфу особенно красив — бирюзовая вода и зелёные острова."},{name:"Марина Тихонова",city:"Астрахань",date:"Февраль 2024",stars:4,text:"Хороший тур, вода чистая. Берите таблетки от морской болезни на всякий случай. Острова красивые и обед вкусный."}]},
+113:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Yang_Bay_Waterfall_Khanh_Hoa.jpg/800px-Yang_Bay_Waterfall_Khanh_Hoa.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hot_spring_Vietnam.jpg/800px-Hot_spring_Vietnam.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Khanh_Hoa_jungle_waterfall.jpg/800px-Khanh_Hoa_jungle_waterfall.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Crocodile_Vietnam_farm.jpg/800px-Crocodile_Vietnam_farm.jpg"],desc:"Парк Ян Бай — доступная природа под Нячангом. Крокодилья ферма, горячие источники, водопады и живое шоу народов Кхань Хоа. Обед включён. Отличный выбор для семей с детьми и тех, кто хочет природу без сложных маршрутов.",tips:[{icon:"👙",text:"Горячие источники — возьмите купальник. Работают как бассейн с горячей минеральной водой."},{icon:"⏰",text:"Шоу проходит в определённое время — уточните расписание у гида, чтобы не пропустить."},{icon:"📸",text:"Крокодилов снимайте через ограждение — лучший ракурс сверху, когда они в воде."},{icon:"💰",text:"Обед включён. Напитки и закуски можно купить на территории."}],reviews:[{name:"Елена Крупнова",city:"Курск",date:"Март 2024",stars:5,text:"С детьми — идеальная экскурсия. Крокодилы огромные! Горячие источники после прогулки — просто рай. Шоу красочное, дети смотрели не отрывая глаз."},{name:"Денис Архипов",city:"Ярославль",date:"Апрель 2024",stars:5,text:"Бюджетный, но насыщенный день. Водопады небольшие, но в джунглях — атмосфера отличная. Горячие источники стали главным открытием."},{name:"Светлана Мельник",city:"Брянск",date:"Февраль 2024",stars:4,text:"Хорошая экскурсия. Крокодилов много и они большие. Горячие источники тёплые. Шоу немного короткое, хотелось бы подольше."}]},
+116:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Ganh_Da_Dia_Phu_Yen.jpg/800px-Ganh_Da_Dia_Phu_Yen.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Phu_Yen_Vietnam_coast.jpg/800px-Phu_Yen_Vietnam_coast.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Bai_Mon_Cape%2C_Phu_Yen.jpg/800px-Bai_Mon_Cape%2C_Phu_Yen.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Mui_Dien_lighthouse_Phu_Yen.jpg/800px-Mui_Dien_lighthouse_Phu_Yen.jpg"],desc:"Фуйен от Эко Вояж: базальтовые столбы Гань Да Дия, мыс Байон с безлюдным пляжем, маяк Мюи Диен на крайней точке востока страны — и полноценный обед в рыбацком ресторане.",tips:[{icon:"🌊",text:"Море у скал бывает бурным — осторожно на мокрых базальтовых плитах, они скользкие."},{icon:"⏰",text:"Дорога 2,5 часа в обе стороны — в сумме 5 часов пути. Выспитесь накануне."},{icon:"📸",text:"Гань Да Дия снимайте утром или на закате — боковой свет даёт объём."},{icon:"🍽",text:"Обед включён. Местная рыба в Фуйене свежайшая — рыбацкий регион."}],reviews:[{name:"Андрей Соловьёв",city:"Мурманск",date:"Март 2024",stars:5,text:"Гань Да Дия — место из другого мира. Базальтовые шестиугольники как соты у воды. Людей почти нет, ощущение личного открытия. Обед с рыбой отменный."},{name:"Жанна Рябова",city:"Сочи",date:"Апрель 2024",stars:5,text:"Эко Вояж организовал отлично — маленькая группа, хороший гид. Пляж Байон уединённый и красивый. Маяк с видом на два моря — вау."},{name:"Максим Зарубин",city:"Тверь",date:"Февраль 2024",stars:4,text:"Красивое место, не банальное. Дорога длинная, устаёшь. Но виды и атмосфера стоят поездки. Обед вкусный, рыба свежая."}]},
+117:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Ninh_Thuan_sand_dune.jpg/800px-Ninh_Thuan_sand_dune.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Po_Klong_Garai_towers%2C_Ninh_Thuan.jpg/800px-Po_Klong_Garai_towers%2C_Ninh_Thuan.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Capybara_on_grass.jpg/800px-Capybara_on_grass.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Mui_Ne_sand_dunes.jpg/800px-Mui_Ne_sand_dunes.jpg"],desc:"Фан Ранг от Эко Вояж с обедом: виноградники прямо у дороги, белые дюны как в пустыне, капибары и тысячелетние башни народа Чам. Регион, который большинство туристов просто проезжают мимо — а зря.",tips:[{icon:"🕶",text:"Дюны отражают солнце — солнцезащитные очки и крем обязательны."},{icon:"⏰",text:"На дюнах лучшее время — утро. После 11:00 жара становится экстремальной."},{icon:"📸",text:"С капибарами фото — обязательный ритуал. Они флегматичные и фотогеничные."},{icon:"💡",text:"Виноград у дороги — местная гордость. Очень сладкий и дешёвый."}],reviews:[{name:"Тамара Шевченко",city:"Ставрополь",date:"Апрель 2024",stars:5,text:"Капибары — мой новый любимый зверь. Огромные, добродушные. Дюны поразили — в Вьетнаме такое? Местный виноград съели килограмм прямо в машине."},{name:"Олег Сидоров",city:"Липецк",date:"Март 2024",stars:5,text:"Фан Ранг совсем не туристический — и это его главный плюс. Башни Чам древние и хорошо сохранились. Дюны и виноградники — неожиданное сочетание."},{name:"Дарья Волощенко",city:"Волгоград",date:"Февраль 2024",stars:4,text:"Необычная экскурсия. Немного устали от жары, но обед и капибары восстановили силы. Рекомендую тем, кто хочет выйти за рамки пляжей."}]},
+120:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Nha_Trang_beach.jpg/800px-Nha_Trang_beach.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Nha_Trang_Bay_from_above.jpg/800px-Nha_Trang_Bay_from_above.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Halong_Bay_sunset.jpg/800px-Halong_Bay_sunset.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Hon_Mun_Island_Nha_Trang.jpg/800px-Hon_Mun_Island_Nha_Trang.jpg"],desc:"Круиз на закате — самый романтичный тур Нячанга. С 17:00 до 20:30 плывёте вдоль берега, пока солнце опускается в море и красит небо в оранжевый и алый. Напитки на борту, живая музыка, тёплый ветер — идеально для двоих.",tips:[{icon:"👗",text:"Лёгкая накидка — после заката на воде свежеет, даже в Нячанге."},{icon:"⏰",text:"Отплытие строго по расписанию. Приходите за 15 минут — лучшие места занимают быстро."},{icon:"📸",text:"Золотой час начинается около 18:30 — небо максимально яркое именно тогда."},{icon:"💑",text:"Для пар — попросите место на носу лодки. Самое романтичное."}],reviews:[{name:"Юрий Фомин",city:"Краснодар",date:"Март 2024",stars:5,text:"Взяли с женой на годовщину — попали в точку. Закат был огненный, небо стало малиновым. Живая музыка, напитки, плещется вода. Один из лучших вечеров."},{name:"Диана Воронова",city:"Ижевск",date:"Апрель 2024",stars:5,text:"Три часа пролетели незаметно. Закат потрясающий — фото как открытки. Народу немного, атмосфера спокойная. Идеально для романтики без пафоса."},{name:"Руслан Аксёнов",city:"Белгород",date:"Февраль 2024",stars:4,text:"Красивый закат, приятная атмосфера. Хотелось чуть больше еды на борту. Вид на ночной Нячанг с воды — отдельный бонус."}]},
+123:{photos:["https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Jeep_tour_Vietnam_village.jpg/800px-Jeep_tour_Vietnam_village.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Vietnamese_countryside_rice_fields.jpg/800px-Vietnamese_countryside_rice_fields.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Khanh_Hoa_jungle_waterfall.jpg/800px-Khanh_Hoa_jungle_waterfall.jpg","https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Vietnam_jungle_road.jpg/800px-Vietnam_jungle_road.jpg"],desc:"Самый авантюрный тур Эко Вояж: дикий водопад без настилов и перил, вьетнамская деревня где не бывает туристов, пикник в джунглях с едой на листьях банана. Это не экскурсия — это настоящее приключение.",tips:[{icon:"👟",text:"Треккинговая обувь или кроссовки — тропы в джунглях скользкие и крутые."},{icon:"🦟",text:"Репеллент от насекомых — у воды в джунглях москиты очень активны."},{icon:"📸",text:"Дикий водопад без перил — самое сильное место. Снимайте осторожно у края воды."},{icon:"💧",text:"Воды возьмите больше, чем кажется — в джунглях жарко и влажно."}],reviews:[{name:"Антон Рыбаков",city:"Пенза",date:"Апрель 2024",stars:5,text:"Настоящее приключение, не туристический аттракцион. Дикий водопад — мощный, без ограждений. Пикник на листьях банана в джунглях — сюрреалистично и вкусно."},{name:"Валерия Кузнецова",city:"Рязань",date:"Март 2024",stars:5,text:"Лучший тур за всю поездку! В деревне нас приняли как редких гостей — угостили кофе, показали хозяйство. Водопад без перил — страшно и восхитительно."},{name:"Борис Смирнов",city:"Орёл",date:"Февраль 2024",stars:4,text:"Реально сложнее, чем ожидал — крутые тропинки. Для людей без физподготовки может быть тяжело. Но вид на водопад и атмосфера пикника — незабываемо."}]},
+};
+
+let selected = new Set();
+let currentFilter = "all";
+let currentSource = "all";
+let currentTour = null;
+
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+function skel(ws=[90,75,82,65]) {
+  return `<div class="ai-skeleton">${ws.map(w=>`<div class="skel-line" style="width:${w}%"></div>`).join("")}</div>`;
+}
+
+// ── RENDER GRID ──
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  const tours = TOURS.filter(t => {
+    const fOk = currentFilter==="all"||(currentFilter==="recommended"?t.rec:t.tags.includes(currentFilter));
+    const sOk = currentSource==="all"||t.src.includes(currentSource);
+    return fOk && sOk;
+  });
+  if (!tours.length) { grid.innerHTML='<div class="empty">Нет туров по этому фильтру</div>'; return; }
+
+  grid.innerHTML = tours.map(t => {
+    const isSel = selected.has(t.id);
+    const primaryTag = t.tags[0] || "sea";
+    const gradBg = TAG_COLORS[primaryTag] || TAG_COLORS.sea;
+    const tagIcon = TAG_ICONS[primaryTag] || "🌊";
+    const primaryScene = (TOUR_SCENES[t.id] || ["sea"])[0];
+    const _urls = PHOTO_SCENES[primaryScene] || PHOTO_SCENES["sea"];
+    const thumbUrl = Array.isArray(_urls) ? (_urls[t.id % _urls.length]) : _urls;
+    const tagHtml = t.tags.slice(0,2).map(tg=>`<span class="tag-pill">${TAG_LABELS[tg]||tg}</span>`).join("");
+    const srcHtml = t.src.map(s=>`<span class="src-pip ${s==='eco'?'eco':''}">${s==='ct'?'Центр Т.':'Эко Вояж'}</span>`).join("");
+    const priceStr = t.priceText||(t.price?`${t.price}$`:"—");
+    return `
+    <div class="card ${isSel?'selected':''}" data-id="${t.id}">
+      <div class="card-thumb" style="background:${gradBg}">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25">${tagIcon}</div>
+        <img class="card-thumb-img" src="${thumbUrl}" alt="${t.name}" onload="this.style.opacity=1" onerror="this.style.opacity=0.3">
+        <div class="card-thumb-overlay"></div>
+        <div class="card-price-chip">${priceStr} <span style="opacity:.6;font-size:.65rem">/чел</span></div>
+        ${t.rec?'<div class="card-rec-badge">⭐ Топ</div>':''}
+        <div class="card-sel-check">✓</div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-num">${t.num}</span>
+          <div class="card-tags">${tagHtml}</div>
+        </div>
+        <div class="card-name">${t.name}${t.multiday?' <span style="font-size:.7rem;color:var(--mist);font-family:DM Sans">· неск. дней</span>':''}</div>
+        <div class="card-desc">${t.desc}</div>
+        <div class="card-footer">
+          <div class="src-pips">${srcHtml}</div>
+          <span class="detail-link" data-detail="${t.id}">Подробнее →</span>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  grid.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", e => {
+      if (e.target.closest(".detail-link")) return;
+      const id = +card.dataset.id;
+      selected.has(id) ? selected.delete(id) : selected.add(id);
+      updateStats();
+      renderGrid();
+    });
+  });
+
+  grid.querySelectorAll(".detail-link").forEach(link => {
+    link.addEventListener("click", e => {
+      e.stopPropagation();
+      openDetail(+link.dataset.detail);
+    });
+  });
+}
+
+function updateStats() {
+  const sel = TOURS.filter(t=>selected.has(t.id));
+  const total = sel.reduce((s,t)=>s+(t.price||0),0)*2;
+  const n = sel.length;
+  document.getElementById("hstatCount").textContent = n;
+  document.getElementById("hstatPrice").textContent = total>0?`~${total}`:"0";
+  const bar = document.getElementById("summaryBar");
+  if (n>0) {
+    bar.classList.add("vis");
+    const suf = n===1?"я":n<5?"и":"й";
+    document.getElementById("sumCount").textContent = `${n} экскурси${suf} выбрано`;
+    document.getElementById("sumNames").textContent = sel.map(t=>t.name).join(" · ");
+    document.getElementById("sumTotal").textContent = `~${total}$ на двоих`;
+  } else { bar.classList.remove("vis"); }
+}
+
+// ── DETAIL ──
+function openDetail(id) {
+  const tour = TOURS.find(t=>t.id===id);
+  if (!tour) return;
+  currentTour = tour;
+  showPage("detailPage");
+
+  document.getElementById("detailEyebrow").textContent =
+    `${tour.src.map(s=>s==='ct'?'Центр Туризма':'Эко Вояж').join(' & ')} · ${tour.num}`;
+  document.getElementById("detailH2").textContent = tour.name;
+
+  const priceStr = tour.priceText||(tour.price?`${tour.price}$`:"инд.");
+  const tagStr = tour.tags.map(tg=>TAG_LABELS[tg]||tg).join(", ");
+  document.getElementById("infoStrip").innerHTML = `
+    <div class="info-block"><div class="info-block-label">Цена</div><div class="info-block-val price-val">${priceStr} <span style="font-size:.8rem;color:var(--mist)">/чел</span></div></div>
+    <div class="info-block"><div class="info-block-label">Категория</div><div class="info-block-val" style="font-size:1rem">${tagStr}</div></div>
+    <div class="info-block"><div class="info-block-label">Длина</div><div class="info-block-val" style="font-size:1rem">${tour.multiday?"Несколько дней":"1 день"}</div></div>
+    ${tour.rec?'<div class="info-block"><div class="info-block-label">Рейтинг</div><div class="info-block-val" style="font-size:1rem;color:var(--coral)">⭐ Топ-выбор</div></div>':''}
+  `;
+
+  updateDetailBtn();
+  document.getElementById("descContent").innerHTML = skel();
+  document.getElementById("tipsContent").innerHTML = skel([80,60,70]);
+  document.getElementById("reviewsContent").innerHTML = skel([95,80,70,60,90,75]);
+
+  document.getElementById("galleryLoading").style.display = "flex";
+  document.getElementById("galleryImgs").style.display = "none";
+
+  loadGallery(tour);
+  loadAI(tour);
+}
+
+function updateDetailBtn() {
+  const btn = document.getElementById("detailSelectBtn");
+  const isSel = selected.has(currentTour.id);
+  btn.className = `detail-select-btn ${isSel?"is-selected":"not-selected"}`;
+  btn.textContent = isSel ? "✓ Добавлено — нажмите, чтобы убрать" : "＋ Добавить в мой список";
+  btn.onclick = () => {
+    selected.has(currentTour.id) ? selected.delete(currentTour.id) : selected.add(currentTour.id);
+    updateStats();
+    updateDetailBtn();
+  };
+}
+
+function loadGallery(tour) {
+  const imgs = document.getElementById("galleryImgs");
+  imgs.innerHTML = "";
+  const scenes = TOUR_SCENES[tour.id] || ["sea","sea","sea","sea"];
+  let loaded = 0;
+  const total = scenes.length;
+
+  scenes.forEach((sceneKey, i) => {
+    const urls = PHOTO_SCENES[sceneKey] || PHOTO_SCENES["sea"];
+    const url  = urls[i % urls.length];
+    const fb   = (PHOTO_SCENES["sea"]||[])[i % 4]; // sea fallback
+
+    const div = document.createElement("div");
+    div.className = "gimg";
+    // Gradient background while loading
+    const gradients = {
+      sea:"linear-gradient(160deg,#0d4a63,#1a8fa8)",
+      halong:"linear-gradient(160deg,#1a3a2a,#3a7a5a)",
+      mountain:"linear-gradient(160deg,#2a3a5a,#4a6a8a)",
+      dunes:"linear-gradient(160deg,#6a4a10,#c8962a)",
+      jungle:"linear-gradient(160deg,#0a2a0a,#1a5a1a)",
+      waterfall:"linear-gradient(160deg,#0a2a3a,#1a6a5a)",
+      sunset:"linear-gradient(160deg,#4a1a0a,#c84a1a)",
+      relax:"linear-gradient(160deg,#1a2a4a,#2a5a7a)",
+      city:"linear-gradient(160deg,#1a1a3a,#3a3a6a)",
+    };
+    div.style.background = gradients[sceneKey] || gradients.sea;
+
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = sceneKey;
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s;position:absolute;inset:0;";
+    div.style.position = "relative";
+
+    const reveal = () => {
+      img.style.opacity = "1";
+      loaded++;
+      if (loaded === 1) {
+        document.getElementById("galleryLoading").style.display = "none";
+        imgs.style.display = "flex";
+      }
+    };
+
+    img.onload  = reveal;
+    img.onerror = () => {
+      // Try sea fallback, then just show gradient
+      if (img.src !== fb) { img.src = fb; }
+      else { loaded++; if (loaded===1){ document.getElementById("galleryLoading").style.display="none"; imgs.style.display="flex"; } }
+    };
+
+    div.appendChild(img);
+    imgs.appendChild(div);
+  });
+
+  // Safety timeout — show whatever loaded after 5s
+  setTimeout(() => {
+    document.getElementById("galleryLoading").style.display = "none";
+    imgs.style.display = "flex";
+  }, 5000);
+}
+
+function loadAI(tour) {
+  const content = TOUR_CONTENT[tour.id];
+  if (!content) {
+    // Fallback for tours without curated content
+    document.getElementById("descContent").innerHTML = `<div class="ai-text">${tour.desc}</div>`;
+    document.getElementById("tipsContent").innerHTML = `<div class="tips-list">
+      <div class="tip-item"><span class="tip-icon">☀️</span><span>Берите солнцезащитный крем — вьетнамское солнце очень активное.</span></div>
+      <div class="tip-item"><span class="tip-icon">💧</span><span>Пейте больше воды — в жару обезвоживание наступает незаметно.</span></div>
+      <div class="tip-item"><span class="tip-icon">💰</span><span>Возьмите наличные донги — не везде принимают карты.</span></div>
+      <div class="tip-item"><span class="tip-icon">📸</span><span>Лучший свет для съёмки — утром до 10:00 и вечером после 16:00.</span></div>
+    </div>`;
+    document.getElementById("reviewsContent").innerHTML = `<div class="ai-text" style="color:var(--mist)">Отзывы для этой экскурсии скоро появятся.</div>`;
+    return;
+  }
+
+  // Render description
+  document.getElementById("descContent").innerHTML = `<div class="ai-text">${content.desc}</div>`;
+
+  // Render tips
+  document.getElementById("tipsContent").innerHTML =
+    `<div class="tips-list">${content.tips.map(tip =>
+      `<div class="tip-item"><span class="tip-icon">${tip.icon}</span><span>${tip.text}</span></div>`
+    ).join("")}</div>`;
+
+  // Render reviews (no photos — curated text only, clean)
+  document.getElementById("reviewsContent").innerHTML =
+    `<div class="reviews-grid">${content.reviews.map((r, i) => {
+      const stars = "★".repeat(r.stars) + "☆".repeat(5 - r.stars);
+      const initials = r.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      const avatarColors = [
+        "linear-gradient(135deg,#1a6b8a,#2ab8c4)",
+        "linear-gradient(135deg,#8a3a1a,#c8692a)",
+        "linear-gradient(135deg,#3a1a6b,#7a3ab8)"
+      ];
+      return `
+      <div class="review-card" style="animation-delay:${i * 0.12}s">
+        <div class="review-header">
+          <div class="review-avatar" style="background:${avatarColors[i % 3]}">${initials}</div>
+          <div class="review-meta">
+            <div class="review-name">${r.name} <span style="color:var(--mist);font-weight:300">· ${r.city}</span></div>
+            <div class="review-date">${r.date}</div>
+          </div>
+          <div class="review-stars">${stars}</div>
+        </div>
+        <div class="review-text">${r.text}</div>
+      </div>`;
+    }).join("")}</div>`;
+}
+
+// ── CONTROLS ──
+document.querySelectorAll("[data-filter]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-filter]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    renderGrid();
+  });
+});
+
+document.querySelectorAll("[data-source]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-source]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentSource = btn.dataset.source;
+    renderGrid();
+  });
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  selected.clear(); updateStats(); renderGrid();
+});
+
+document.getElementById("backBtn").addEventListener("click", () => {
+  showPage("listPage"); renderGrid();
+});
+
+renderGrid();
+updateStats();
+</script>
+</body>
+</html>
